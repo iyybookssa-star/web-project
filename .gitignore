@@ -8,3 +8,4 @@ client/dist/
 # Env
 .env
 *.env
+node_modules
