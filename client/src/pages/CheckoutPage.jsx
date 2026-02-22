@@ -103,7 +103,7 @@ export default function CheckoutPage() {
     const [mapsError, setMapsError] = useState(false);
 
     // ⬇ Mapbox public token
-    const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'YOUR_MAPBOX_PUBLIC_TOKEN';
+    const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiZW5nZWxpYnJhaGltbyIsImEiOiJjbWx1NXVvNGUwNXZvM2dxdHhibnliaWV2In0.EgGXVX3x0GFVozTjhOxFCA';
 
     // Inject Mapbox GL JS + CSS when entering Step 2
     useEffect(() => {
