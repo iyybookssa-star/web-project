@@ -112,8 +112,8 @@ export default function GaragePage() {
                                             <div className="space-y-1">
                                                 <p className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Status</p>
                                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${order.status === 'Delivered' ? 'bg-green-500/20 text-green-400' :
-                                                        order.status === 'Cancelled' ? 'bg-red-500/20 text-red-400' :
-                                                            'bg-blue-500/20 text-blue-400'
+                                                    order.status === 'Cancelled' ? 'bg-red-500/20 text-red-400' :
+                                                        'bg-blue-500/20 text-blue-400'
                                                     }`}>
                                                     {order.status}
                                                 </span>
@@ -161,7 +161,7 @@ export default function GaragePage() {
                             Recently Viewed / Purchased
                         </h2>
                         {pastPurchases.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 {pastPurchases.map((product) => (
                                     <ProductCard key={product._id} product={product} />
                                 ))}

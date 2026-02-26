@@ -62,10 +62,10 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-background-dark via-background-dark/80 to-transparent" />
                 </div>
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center w-full">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center w-full">
                     {/* Hero Text */}
                     <div className="space-y-6">
-                        <h2 className="text-5xl lg:text-6xl font-black leading-[1.1] text-white">
+                        <h2 className="text-4xl md:text-6xl font-black leading-[1.1] text-white">
                             FIND THE <span className="text-primary italic">RIGHT PARTS</span> FOR YOUR RIDE
                         </h2>
                         <p className="text-lg text-slate-300 max-w-md">
@@ -180,7 +180,7 @@ export default function HomePage() {
                                 Buy It <span className="text-primary">Again</span>
                             </h3>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                             {pastPurchases.map((product) => (
                                 <ProductCard key={product._id} product={product} />
                             ))}
@@ -207,13 +207,13 @@ export default function HomePage() {
                     </div>
 
                     {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="bg-white dark:bg-surface-dark rounded-2xl h-80 animate-pulse" />
                             ))}
                         </div>
                     ) : topSellers.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                             {topSellers.map((product) => (
                                 <ProductCard key={product._id} product={product} />
                             ))}

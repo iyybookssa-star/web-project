@@ -309,7 +309,7 @@ export default function CheckoutPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
             <StepBar step={step} />
 
-            <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="grid md:grid-cols-[1fr_360px] gap-8 items-start">
 
                 {/* ── Left: step content ── */}
                 <div className="bg-surface-dark border border-border-dark rounded-2xl p-6 sm:p-8">
@@ -466,7 +466,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* ── Right: order summary ── */}
-                <div className="bg-surface-dark border border-border-dark rounded-2xl p-6 space-y-4 lg:sticky lg:top-24">
+                <div className="bg-surface-dark border border-border-dark rounded-2xl p-6 space-y-4 md:sticky md:top-24">
                     <h3 className="font-bold text-white text-lg border-b border-border-dark pb-3">Order Summary</h3>
 
                     <div className="space-y-3 max-h-64 overflow-y-auto pr-1">

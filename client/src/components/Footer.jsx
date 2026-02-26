@@ -2,10 +2,10 @@ export default function Footer() {
     return (
         <footer className="bg-background-light dark:bg-background-dark pt-20 pb-10 border-t border-slate-200 dark:border-border-dark">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
 
                     {/* Brand */}
-                    <div className="col-span-2 lg:col-span-2 space-y-6">
+                    <div className="col-span-2 space-y-6">
                         <div className="flex items-center gap-2">
                             <div className="bg-primary p-1 rounded-lg text-white">
                                 <span className="material-symbols-outlined block text-sm">tire_repair</span>

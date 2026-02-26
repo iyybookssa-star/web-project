@@ -104,7 +104,7 @@ export default function ProductsPage() {
 
             {/* Results */}
             {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {[...Array(12)].map((_, i) => (
                         <div key={i} className="bg-surface-dark rounded-2xl h-72 animate-pulse" />
                     ))}
@@ -112,7 +112,7 @@ export default function ProductsPage() {
             ) : products.length > 0 ? (
                 <>
                     <p className="text-sm text-gray-500 mb-4">{total} parts found</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {products.map((product) => (
                             <ProductCard key={product._id} product={product} />
                         ))}
