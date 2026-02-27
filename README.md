@@ -12,7 +12,7 @@ Partify is a modern e-commerce platform dedicated to selling car parts. It featu
 - **Axios**: Promise based HTTP client for the browser and node.js.
 - **React Hot Toast**: Beautiful notifications for React.
 - **jsPDF**: Client-side PDF generation (used for receipts).
-- **@react-google-maps/api**: Google Maps integration.
+- **@react-mapox-maps/api**: mapox Maps integration.
 
 ### Backend
 - **Node.js**: JavaScript runtime built on Chrome's V8 JavaScript engine.
