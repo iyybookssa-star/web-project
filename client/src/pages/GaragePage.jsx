@@ -4,23 +4,25 @@ import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import { getCookie } from '../utils/cookieUtils';
 import { useAuth } from '../context/AuthContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { generateReceipt } from '../utils/generateReceipt';
 
 export default function GaragePage() {
     const { user } = useAuth();
+    const { favoriteIds } = useFavorites();
     const [orders, setOrders] = useState([]);
     const [pastPurchases, setPastPurchases] = useState([]);
+    const [lovedProducts, setLovedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Fetch orders
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (user) {
-                    // Fetch real orders from DB
                     const { data } = await api.get('/orders/myorders');
                     setOrders(data);
                 } else {
-                    // Fallback to cookie for guests
                     const pastIds = getCookie('past_purchases');
                     if (pastIds) {
                         const { data } = await api.get(`/products?ids=${pastIds}`);
@@ -37,6 +39,30 @@ export default function GaragePage() {
         fetchData();
     }, [user]);
 
+    // Fetch loved products whenever favoriteIds change
+    useEffect(() => {
+        const fetchLoved = async () => {
+            if (favoriteIds.length === 0) {
+                setLovedProducts([]);
+                return;
+            }
+            try {
+                if (user) {
+                    const { data } = await api.get('/favorites');
+                    setLovedProducts(data);
+                } else {
+                    // Guest: fetch by ids
+                    const { data } = await api.get(`/products?ids=${favoriteIds.join(',')}`);
+                    setLovedProducts(data.products || []);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchLoved();
+    }, [favoriteIds, user]);
+
     return (
         <div className="min-h-screen bg-background-dark pb-20">
             {/* ── Header ── */}
@@ -48,7 +74,7 @@ export default function GaragePage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-black text-white uppercase tracking-wide">My Garage</h1>
-                            <p className="text-slate-400 mt-1">Manage your vehicles and past purchases</p>
+                            <p className="text-slate-400 mt-1">Your loved items and past purchases</p>
                         </div>
                     </div>
                 </div>
@@ -56,6 +82,32 @@ export default function GaragePage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
 
+                {/* ── Loved Items ── */}
+                <section>
+                    <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-red-500">favorite</span>
+                        Loved Items
+                        {lovedProducts.length > 0 && (
+                            <span className="bg-red-500/20 text-red-400 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                                {lovedProducts.length}
+                            </span>
+                        )}
+                    </h2>
+                    {lovedProducts.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {lovedProducts.map((product) => (
+                                <ProductCard key={product._id} product={product} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-16 bg-surface-dark border border-border-dark rounded-2xl">
+                            <span className="material-symbols-outlined text-5xl text-slate-600 mb-3 block">favorite</span>
+                            <h3 className="text-lg font-bold text-white mb-1">No loved items yet</h3>
+                            <p className="text-slate-400 text-sm mb-6">Click the ❤️ heart on any product to add it here.</p>
+                            <Link to="/products" className="text-primary font-bold hover:underline">Browse Products</Link>
+                        </div>
+                    )}
+                </section>
 
                 {/* ── Order History (Logged In) ── */}
                 {user ? (

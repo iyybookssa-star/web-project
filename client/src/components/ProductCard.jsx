@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
 
 export default function ProductCard({ product }) {
     const { addToCart } = useCart();
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const loved = isFavorite(product._id);
 
     return (
         <div className="bg-white dark:bg-surface-dark rounded-2xl p-4 border border-slate-100 dark:border-border-dark flex flex-col h-full group">
@@ -33,9 +36,22 @@ export default function ProductCard({ product }) {
                     </span>
                 )}
 
-                {/* Wishlist Button */}
-                <button className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-primary transition-colors">
-                    <span className="material-symbols-outlined text-sm">favorite</span>
+                {/* Wishlist / Love Button */}
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFavorite(product._id, product.name);
+                    }}
+                    className={`absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
+                        loved
+                            ? 'bg-red-500 text-white scale-110 shadow-lg shadow-red-500/30'
+                            : 'bg-white/10 backdrop-blur-md text-white hover:bg-primary'
+                    }`}
+                >
+                    <span className="material-symbols-outlined text-sm" style={loved ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                        favorite
+                    </span>
                 </button>
             </div>
 

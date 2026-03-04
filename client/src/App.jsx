@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import Navbar from './components/Navbar';
 import CartSidebar from './components/CartSidebar';
 import Footer from './components/Footer';
@@ -27,6 +28,7 @@ const PageLoader = () => (
 export default function App() {
     return (
         <AuthProvider>
+            <FavoritesProvider>
             <CartProvider>
                 <HashRouter>
                     <div className="flex flex-col min-h-screen bg-background-dark text-white">
@@ -56,6 +58,7 @@ export default function App() {
                     />
                 </HashRouter>
             </CartProvider>
+            </FavoritesProvider>
         </AuthProvider>
     );
 }
