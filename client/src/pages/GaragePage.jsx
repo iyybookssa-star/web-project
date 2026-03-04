@@ -56,28 +56,6 @@ export default function GaragePage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
 
-                {/* ── Your Vehicle (Placeholder) ── */}
-                <section>
-                    <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">directions_car</span>
-                        Your Vehicle
-                    </h2>
-                    <div className="bg-surface-dark border border-border-dark rounded-2xl p-8 text-center sm:text-left flex flex-col sm:flex-row items-center gap-8">
-                        <div className="w-32 h-32 bg-black/40 rounded-full flex items-center justify-center border-2 border-dashed border-slate-700">
-                            <span className="material-symbols-outlined text-4xl text-slate-600">add_a_photo</span>
-                        </div>
-                        <div className="space-y-4 flex-1">
-                            <div>
-                                <h3 className="text-2xl font-bold text-white">No vehicle added</h3>
-                                <p className="text-slate-400">Add your car to find parts that fit perfectly.</p>
-                            </div>
-                            <button className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors inline-Flex items-center gap-2">
-                                <span className="material-symbols-outlined">add</span>
-                                Add Vehicle
-                            </button>
-                        </div>
-                    </div>
-                </section>
 
                 {/* ── Order History (Logged In) ── */}
                 {user ? (
