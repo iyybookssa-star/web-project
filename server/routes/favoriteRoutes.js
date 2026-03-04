@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const Product = require("../models/Product");
 const { protect } = require("../middleware/auth");
 
 // @route   GET /api/favorites
@@ -21,20 +22,28 @@ router.get("/", protect, async (req, res) => {
 // @access  Private
 router.post("/:productId", protect, async (req, res) => {
   try {
+    const { productId } = req.params;
     const user = await User.findById(req.user._id);
-    const productId = req.params.productId;
-    const index = user.favorites.indexOf(productId);
 
-    if (index > -1) {
-      // Already favorited → remove
-      user.favorites.splice(index, 1);
-      await user.save();
-      res.json({ isFavorite: false, favorites: user.favorites });
+    // Use .some() with .toString() so ObjectId vs String comparison works
+    const alreadyFavorited = user.favorites.some(
+      (id) => id.toString() === productId,
+    );
+
+    if (alreadyFavorited) {
+      // Remove using $pull (atomic, skips pre-save hooks)
+      await User.findByIdAndUpdate(req.user._id, {
+        $pull: { favorites: productId },
+      });
+      const updated = await User.findById(req.user._id);
+      return res.json({ isFavorite: false, favorites: updated.favorites });
     } else {
-      // Not favorited → add
-      user.favorites.push(productId);
-      await user.save();
-      res.json({ isFavorite: true, favorites: user.favorites });
+      // Add using $addToSet (atomic, prevents duplicates)
+      await User.findByIdAndUpdate(req.user._id, {
+        $addToSet: { favorites: productId },
+      });
+      const updated = await User.findById(req.user._id);
+      return res.json({ isFavorite: true, favorites: updated.favorites });
     }
   } catch (error) {
     console.error(error);
@@ -48,7 +57,9 @@ router.post("/:productId", protect, async (req, res) => {
 router.get("/check/:productId", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const isFavorite = user.favorites.includes(req.params.productId);
+    const isFavorite = user.favorites.some(
+      (id) => id.toString() === req.params.productId,
+    );
     res.json({ isFavorite });
   } catch (error) {
     console.error(error);
