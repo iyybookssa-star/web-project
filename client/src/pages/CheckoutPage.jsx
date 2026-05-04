@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { generateReceipt } from '../utils/generateReceipt';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
-import { getCookie, setCookie } from '../utils/cookieUtils';
+import { addToPurchaseHistory } from '../utils/cookieUtils';
 
 // ── Step indicator ──────────────────────────────────────────────────────────
 function StepBar({ step }) {
@@ -232,12 +232,8 @@ export default function CheckoutPage() {
             const { data } = await api.post('/orders', orderData);
 
             // Save to past purchases cookie
-            const existingCookie = getCookie('past_purchases');
-            const currentIds = existingCookie ? existingCookie.split(',') : [];
             const newIds = cartItems.map(item => item._id);
-            // Combine new and old, remove duplicates, keep top 12
-            const uniqueIds = [...new Set([...newIds, ...currentIds])].slice(0, 12);
-            setCookie('past_purchases', uniqueIds.join(','), 365);
+            addToPurchaseHistory(newIds);
 
             setPlacedOrder(data);
             clearCart();

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
-import { getCookie } from '../utils/cookieUtils';
+import { getPurchaseHistory } from '../utils/cookieUtils';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { generateReceipt } from '../utils/generateReceipt';
@@ -15,19 +15,25 @@ export default function GaragePage() {
     const [lovedProducts, setLovedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch orders
+    // Fetch orders (logged in) AND purchase history from cookies (always)
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Always check cookies for purchase history
+                const purchaseIds = getPurchaseHistory();
+                if (purchaseIds.length > 0) {
+                    try {
+                        const { data } = await api.get(`/products?ids=${purchaseIds.join(',')}`);
+                        setPastPurchases(data.products || []);
+                    } catch (err) {
+                        console.error('Failed to fetch cookie purchases:', err);
+                    }
+                }
+
+                // If logged in, also fetch orders from the server
                 if (user) {
                     const { data } = await api.get('/orders/myorders');
                     setOrders(data);
-                } else {
-                    const pastIds = getCookie('past_purchases');
-                    if (pastIds) {
-                        const { data } = await api.get(`/products?ids=${pastIds}`);
-                        setPastPurchases(data.products || []);
-                    }
                 }
             } catch (error) {
                 console.error(error);
@@ -74,7 +80,7 @@ export default function GaragePage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-black text-white uppercase tracking-wide">My Garage</h1>
-                            <p className="text-slate-400 mt-1">Your loved items and past purchases</p>
+                            <p className="text-slate-400 mt-1">Your loved items, order history, and past purchases</p>
                         </div>
                     </div>
                 </div>
@@ -109,12 +115,17 @@ export default function GaragePage() {
                     )}
                 </section>
 
-                {/* ── Order History (Logged In) ── */}
-                {user ? (
+                {/* ── Order History (Logged In Users) ── */}
+                {user && (
                     <section>
                         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">receipt_long</span>
                             Order History
+                            {orders.length > 0 && (
+                                <span className="bg-primary/20 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full">
+                                    {orders.length}
+                                </span>
+                            )}
                         </h2>
                         {loading ? (
                             <div className="space-y-4">
@@ -183,29 +194,59 @@ export default function GaragePage() {
                             </div>
                         )}
                     </section>
-                ) : (
-                    /* ── Guest History (Cookies) ── */
-                    <section>
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">history</span>
-                            Recently Viewed / Purchased
-                        </h2>
-                        {pastPurchases.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                {pastPurchases.map((product) => (
-                                    <ProductCard key={product._id} product={product} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-16 bg-surface-dark border border-border-dark rounded-2xl">
-                                <span className="material-symbols-outlined text-5xl text-slate-600 mb-3 block">history</span>
-                                <h3 className="text-lg font-bold text-white mb-1">No history found</h3>
-                                <p className="text-slate-400 text-sm mb-6">Log in to see your full order history.</p>
-                                <Link to="/login" className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors">
-                                    Log In
-                                </Link>
-                            </div>
+                )}
+
+                {/* ── Purchase History from Cookies (always shown) ── */}
+                <section>
+                    <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-amber-400">history</span>
+                        Purchase History
+                        <span className="text-xs text-slate-500 font-normal ml-1">(saved in cookies)</span>
+                        {pastPurchases.length > 0 && (
+                            <span className="bg-amber-500/20 text-amber-400 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                                {pastPurchases.length}
+                            </span>
                         )}
+                    </h2>
+                    {loading ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="bg-surface-dark rounded-2xl h-64 animate-pulse border border-border-dark" />
+                            ))}
+                        </div>
+                    ) : pastPurchases.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {pastPurchases.map((product) => (
+                                <ProductCard key={product._id} product={product} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-16 bg-surface-dark border border-border-dark rounded-2xl">
+                            <span className="material-symbols-outlined text-5xl text-slate-600 mb-3 block">history</span>
+                            <h3 className="text-lg font-bold text-white mb-1">No purchase history</h3>
+                            <p className="text-slate-400 text-sm mb-6">
+                                {user
+                                    ? 'Your purchased items will appear here after checkout.'
+                                    : 'Log in and make a purchase, or your purchased items will be tracked here via cookies.'}
+                            </p>
+                            <Link to="/products" className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors">
+                                Browse Products
+                            </Link>
+                        </div>
+                    )}
+                </section>
+
+                {/* ── Login prompt for guests ── */}
+                {!user && (
+                    <section>
+                        <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 border border-primary/20 rounded-2xl p-8 text-center">
+                            <span className="material-symbols-outlined text-4xl text-primary mb-3 block">login</span>
+                            <h3 className="text-lg font-bold text-white mb-2">Want full order tracking?</h3>
+                            <p className="text-slate-400 text-sm mb-6">Log in to see your complete order history with status tracking, invoices, and more.</p>
+                            <Link to="/login" className="bg-primary hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors">
+                                Log In
+                            </Link>
+                        </div>
                     </section>
                 )}
 

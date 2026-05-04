@@ -1,41 +1,92 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import api from '../api/axios';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [loaded, setLoaded] = useState(false);
 
-    const addToCart = (product, qty = 1) => {
-        setCartItems((prev) => {
-            const existing = prev.find((item) => item._id === product._id);
-            if (existing) {
-                toast.success(`${product.name} quantity updated`);
-                return prev.map((item) =>
-                    item._id === product._id
-                        ? { ...item, qty: item.qty + qty }
-                        : item
-                );
+    // Load cart from server session on mount
+    useEffect(() => {
+        const fetchCart = async () => {
+            try {
+                const { data } = await api.get('/cart');
+                setCartItems(data || []);
+            } catch (error) {
+                console.error('Failed to load cart from session:', error);
+            } finally {
+                setLoaded(true);
             }
+        };
+        fetchCart();
+    }, []);
+
+    const addToCart = async (product, qty = 1) => {
+        try {
+            const { data } = await api.post('/cart', {
+                _id: product._id,
+                name: product.name,
+                partNumber: product.partNumber,
+                price: product.price,
+                image: product.image,
+                qty,
+            });
+            setCartItems(data);
             toast.success(`${product.name} added to cart!`);
-            return [...prev, { ...product, qty }];
-        });
-        setIsCartOpen(true);
+            setIsCartOpen(true);
+        } catch (error) {
+            console.error('Failed to add to cart:', error);
+            // Fallback: update locally
+            setCartItems((prev) => {
+                const existing = prev.find((item) => item._id === product._id);
+                if (existing) {
+                    return prev.map((item) =>
+                        item._id === product._id
+                            ? { ...item, qty: item.qty + qty }
+                            : item
+                    );
+                }
+                return [...prev, { ...product, qty }];
+            });
+            toast.success(`${product.name} added to cart!`);
+            setIsCartOpen(true);
+        }
     };
 
-    const removeFromCart = (productId) => {
-        setCartItems((prev) => prev.filter((item) => item._id !== productId));
+    const removeFromCart = async (productId) => {
+        try {
+            const { data } = await api.delete(`/cart/${productId}`);
+            setCartItems(data);
+        } catch (error) {
+            console.error('Failed to remove from cart:', error);
+            setCartItems((prev) => prev.filter((item) => item._id !== productId));
+        }
     };
 
-    const updateQty = (productId, qty) => {
+    const updateQty = async (productId, qty) => {
         if (qty <= 0) return removeFromCart(productId);
-        setCartItems((prev) =>
-            prev.map((item) => (item._id === productId ? { ...item, qty } : item))
-        );
+        try {
+            const { data } = await api.put(`/cart/${productId}`, { qty });
+            setCartItems(data);
+        } catch (error) {
+            console.error('Failed to update qty:', error);
+            setCartItems((prev) =>
+                prev.map((item) => (item._id === productId ? { ...item, qty } : item))
+            );
+        }
     };
 
-    const clearCart = () => setCartItems([]);
+    const clearCart = async () => {
+        try {
+            await api.delete('/cart');
+        } catch (error) {
+            console.error('Failed to clear cart:', error);
+        }
+        setCartItems([]);
+    };
 
     const cartTotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
     const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
@@ -52,6 +103,7 @@ export const CartProvider = ({ children }) => {
                 clearCart,
                 cartTotal,
                 cartCount,
+                loaded,
             }}
         >
             {children}
