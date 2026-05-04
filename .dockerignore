@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+.gitignore
+.gitattributes
+*.md
+.env
+client/.env
+server/.env
+client/node_modules
+server/node_modules
+client/dist

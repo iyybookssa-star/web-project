@@ -56,10 +56,18 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Partify API is running 🚗" });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
+// Serve React client in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "public")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
+} else {
+  // 404 handler (dev only — in prod the client handles routing)
+  app.use((req, res) => {
+    res.status(404).json({ message: "Route not found" });
+  });
+}
 
 // Error handler
 app.use((err, req, res, next) => {
