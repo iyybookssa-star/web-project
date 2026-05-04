@@ -3,7 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const session = require("express-session");
-const { MongoStore } = require("connect-mongo");
+const MongoStore = require("connect-mongo");
 const connectDB = require("./config/db");
 
 // Load env vars
@@ -15,9 +15,15 @@ connectDB();
 const app = express();
 
 // Middleware
-const allowedOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN || "http://localhost:5173",
+  "https://iyybookssa-star.github.io",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:5176",
+];
 app.use(cors({
-  origin: [allowedOrigin, "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"],
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json());
@@ -37,8 +43,8 @@ app.use(
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,
-      secure: false, // set to true in production with HTTPS
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
