@@ -1,0 +1,26 @@
+name: Seed Database
+
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./server
+          
+      - name: Run Seed Script
+        run: npm run seed
+        working-directory: ./server
+        env:
+          MONGO_URI: mongodb+srv://iyybookssa_db_user:Duko%402005@cluster0.yskufim.mongodb.net/partify?retryWrites=true&w=majority
