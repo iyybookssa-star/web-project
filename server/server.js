@@ -3,7 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const connectMongo = require("connect-mongo");
+const MongoStore = connectMongo.default || connectMongo;
 const connectDB = require("./config/db");
 
 // Load env vars
