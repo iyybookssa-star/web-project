@@ -43,7 +43,6 @@ export default function Navbar() {
                         <Link to="/" className="hover:text-primary transition-colors">Home</Link>
                         <Link to="/products" className="hover:text-primary transition-colors">Shop</Link>
                         <Link to="/garage" className="hover:text-primary transition-colors">My Garage</Link>
-                        <a href="#" className="hover:text-primary transition-colors">Deals</a>
                         <Link to="/support" className="hover:text-primary transition-colors">Support</Link>
                         {user?.isAdmin && (
                             <Link to="/admin" className="flex items-center gap-1.5 text-primary font-bold hover:text-blue-400 transition-colors">
@@ -153,10 +152,6 @@ export default function Navbar() {
                                 <span className="material-symbols-outlined text-primary text-[20px]">garage_home</span>
                                 My Garage
                             </Link>
-                            <a href="#" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors text-sm font-medium">
-                                <span className="material-symbols-outlined text-primary text-[20px]">local_offer</span>
-                                Deals
-                            </a>
                             <Link to="/support" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors text-sm font-medium">
                                 <span className="material-symbols-outlined text-primary text-[20px]">support_agent</span>
                                 Support
