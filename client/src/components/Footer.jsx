@@ -43,10 +43,18 @@ export default function Footer() {
                     <div>
                         <h5 className="font-bold mb-6 uppercase text-xs tracking-widest text-primary">Support</h5>
                         <ul className="space-y-4 text-sm text-slate-500">
-                            <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Shipping Info</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Returns</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
+                            <li>
+                                <a href="mailto:support@partifypro.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+                                    <span className="material-symbols-outlined text-base">mail</span>
+                                    support@partifypro.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:+966500000000" className="flex items-center gap-2 hover:text-primary transition-colors">
+                                    <span className="material-symbols-outlined text-base">phone</span>
+                                    +966 50 000 0000
+                                </a>
+                            </li>
                         </ul>
                     </div>
 

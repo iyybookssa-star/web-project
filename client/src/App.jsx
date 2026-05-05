@@ -17,6 +17,7 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const GaragePage = lazy(() => import('./pages/GaragePage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -45,6 +46,7 @@ export default function App() {
                                     <Route path="/checkout" element={<CheckoutPage />} />
                                     <Route path="/garage" element={<GaragePage />} />
                                     <Route path="/admin" element={<AdminPage />} />
+                                    <Route path="/support" element={<SupportPage />} />
                                 </Routes>
                             </Suspense>
                         </main>

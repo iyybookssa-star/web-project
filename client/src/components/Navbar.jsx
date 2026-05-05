@@ -44,7 +44,7 @@ export default function Navbar() {
                         <Link to="/products" className="hover:text-primary transition-colors">Shop</Link>
                         <Link to="/garage" className="hover:text-primary transition-colors">My Garage</Link>
                         <a href="#" className="hover:text-primary transition-colors">Deals</a>
-                        <a href="#" className="hover:text-primary transition-colors">Support</a>
+                        <Link to="/support" className="hover:text-primary transition-colors">Support</Link>
                         {user?.isAdmin && (
                             <Link to="/admin" className="flex items-center gap-1.5 text-primary font-bold hover:text-blue-400 transition-colors">
                                 <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
@@ -157,10 +157,10 @@ export default function Navbar() {
                                 <span className="material-symbols-outlined text-primary text-[20px]">local_offer</span>
                                 Deals
                             </a>
-                            <a href="#" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors text-sm font-medium">
+                            <Link to="/support" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors text-sm font-medium">
                                 <span className="material-symbols-outlined text-primary text-[20px]">support_agent</span>
                                 Support
-                            </a>
+                            </Link>
                             {user?.isAdmin && (
                                 <Link to="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors text-sm font-medium text-primary">
                                     <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>

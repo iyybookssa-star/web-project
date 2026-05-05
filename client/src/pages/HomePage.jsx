@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import { getCookie } from '../utils/cookieUtils';
@@ -28,6 +28,7 @@ const CATEGORIES = [
 ];
 
 export default function HomePage() {
+    const navigate = useNavigate();
     const [topSellers, setTopSellers] = useState([]);
     const [pastPurchases, setPastPurchases] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -116,7 +117,7 @@ export default function HomePage() {
                                     alert('Please select at least a Year or Make');
                                     return;
                                 }
-                                window.location.href = `/products?year=${year}&make=${make}&model=${model}`;
+                                navigate(`/products?year=${year}&make=${make}&model=${model}`);
                             }}
                             className="w-full mt-6 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                         >
