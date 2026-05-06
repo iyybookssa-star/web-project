@@ -28,15 +28,29 @@ router.post('/', protect, async (req, res) => {
     if (!req.session.orders) req.session.orders = [];
     req.session.orders.unshift(order.toObject());
 
-    res.status(201).json(order);
+    // Explicitly save session to ensure it persists
+    req.session.save((err) => {
+      if (err) console.error('Session save error:', err);
+      res.status(201).json(order);
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
 // GET /api/orders/myorders - Get orders from session (clears when browser closes)
-router.get('/myorders', protect, (req, res) => {
-  res.json(req.session.orders || []);
+router.get('/myorders', protect, async (req, res) => {
+  try {
+    // If session has no orders yet, load from DB (first visit in this session)
+    if (!req.session.orders) {
+      const dbOrders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+      req.session.orders = dbOrders.map(o => o.toObject());
+      req.session.save();
+    }
+    res.json(req.session.orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // GET /api/orders/:id - Get single order (protected)
@@ -55,3 +69,4 @@ router.get('/:id', protect, async (req, res) => {
 });
 
 module.exports = router;
+
