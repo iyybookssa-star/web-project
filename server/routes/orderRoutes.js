@@ -23,20 +23,20 @@ router.post('/', protect, async (req, res) => {
       taxPrice,
       totalPrice,
     });
+
+    // Also store in session so it clears when browser closes
+    if (!req.session.orders) req.session.orders = [];
+    req.session.orders.unshift(order.toObject());
+
     res.status(201).json(order);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// GET /api/orders/myorders - Get current user's orders (protected)
-router.get('/myorders', protect, async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+// GET /api/orders/myorders - Get orders from session (clears when browser closes)
+router.get('/myorders', protect, (req, res) => {
+  res.json(req.session.orders || []);
 });
 
 // GET /api/orders/:id - Get single order (protected)
