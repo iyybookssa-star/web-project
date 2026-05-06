@@ -1,10 +1,11 @@
-export function setCookie(name, value, days = 365) {
+export function setCookie(name, value, days = 0) {
     let expires = "";
-    if (days) {
+    if (days > 0) {
         const date = new Date();
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
+    // No expires → session cookie → cleared when browser closes
     document.cookie = name + "=" + encodeURIComponent(value || "") + expires + "; path=/";
 }
 
@@ -28,7 +29,7 @@ export function addToPurchaseHistory(productIds) {
     const existing = getCookie('past_purchases');
     const currentIds = existing ? existing.split(',') : [];
     const uniqueIds = [...new Set([...productIds, ...currentIds])].slice(0, 20);
-    setCookie('past_purchases', uniqueIds.join(','), 365);
+    setCookie('past_purchases', uniqueIds.join(','));
 }
 
 export function getPurchaseHistory() {
