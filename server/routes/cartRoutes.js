@@ -25,7 +25,11 @@ router.post('/', (req, res) => {
     req.session.cart.push({ _id, name, partNumber, price, image, qty });
   }
 
-  res.json(req.session.cart);
+  // Explicitly save before responding to prevent race conditions
+  req.session.save((err) => {
+    if (err) console.error('Session save error:', err);
+    res.json(req.session.cart);
+  });
 });
 
 // PUT /api/cart/:id - Update quantity of an item
@@ -37,7 +41,6 @@ router.put('/:id', (req, res) => {
   }
 
   if (qty <= 0) {
-    // Remove item if qty is 0 or less
     req.session.cart = req.session.cart.filter((item) => item._id !== req.params.id);
   } else {
     const item = req.session.cart.find((item) => item._id === req.params.id);
@@ -48,7 +51,10 @@ router.put('/:id', (req, res) => {
     }
   }
 
-  res.json(req.session.cart);
+  req.session.save((err) => {
+    if (err) console.error('Session save error:', err);
+    res.json(req.session.cart);
+  });
 });
 
 // DELETE /api/cart/:id - Remove item from session cart
@@ -58,13 +64,20 @@ router.delete('/:id', (req, res) => {
   }
 
   req.session.cart = req.session.cart.filter((item) => item._id !== req.params.id);
-  res.json(req.session.cart);
+  req.session.save((err) => {
+    if (err) console.error('Session save error:', err);
+    res.json(req.session.cart);
+  });
 });
 
 // DELETE /api/cart - Clear entire cart
 router.delete('/', (req, res) => {
   req.session.cart = [];
-  res.json([]);
+  req.session.save((err) => {
+    if (err) console.error('Session save error:', err);
+    res.json([]);
+  });
 });
 
 module.exports = router;
+

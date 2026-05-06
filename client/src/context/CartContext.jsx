@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 
@@ -8,6 +8,9 @@ export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [loaded, setLoaded] = useState(false);
+
+    // Queue to serialize cart mutations (prevents session race conditions)
+    const queueRef = useRef(Promise.resolve());
 
     // Load cart from server session on mount
     useEffect(() => {
@@ -24,36 +27,40 @@ export const CartProvider = ({ children }) => {
         fetchCart();
     }, []);
 
-    const addToCart = async (product, qty = 1) => {
-        try {
-            const { data } = await api.post('/cart', {
-                _id: product._id,
-                name: product.name,
-                partNumber: product.partNumber,
-                price: product.price,
-                image: product.image,
-                qty,
-            });
-            setCartItems(data);
-            toast.success(`${product.name} added to cart!`);
-            setIsCartOpen(true);
-        } catch (error) {
-            console.error('Failed to add to cart:', error);
-            // Fallback: update locally
-            setCartItems((prev) => {
-                const existing = prev.find((item) => item._id === product._id);
-                if (existing) {
-                    return prev.map((item) =>
-                        item._id === product._id
-                            ? { ...item, qty: item.qty + qty }
-                            : item
-                    );
-                }
-                return [...prev, { ...product, qty }];
-            });
-            toast.success(`${product.name} added to cart!`);
-            setIsCartOpen(true);
-        }
+    const addToCart = (product, qty = 1) => {
+        // Chain onto the queue so requests run one-at-a-time
+        queueRef.current = queueRef.current.then(async () => {
+            try {
+                const { data } = await api.post('/cart', {
+                    _id: product._id,
+                    name: product.name,
+                    partNumber: product.partNumber,
+                    price: product.price,
+                    image: product.image,
+                    qty,
+                });
+                setCartItems(data);
+                toast.success(`${product.name} added to cart!`);
+                setIsCartOpen(true);
+            } catch (error) {
+                console.error('Failed to add to cart:', error);
+                // Fallback: update locally
+                setCartItems((prev) => {
+                    const existing = prev.find((item) => item._id === product._id);
+                    if (existing) {
+                        return prev.map((item) =>
+                            item._id === product._id
+                                ? { ...item, qty: item.qty + qty }
+                                : item
+                        );
+                    }
+                    return [...prev, { ...product, qty }];
+                });
+                toast.success(`${product.name} added to cart!`);
+                setIsCartOpen(true);
+            }
+        });
+        return queueRef.current;
     };
 
     const removeFromCart = async (productId) => {
