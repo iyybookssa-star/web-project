@@ -189,7 +189,7 @@ export default function CheckoutPage() {
     }, [user, cartItems]);
 
     const shipping = cartTotal > 150 ? 0 : 12.99;
-    const tax = +(cartTotal * 0.08).toFixed(2);
+    const tax = +(cartTotal * 0.15).toFixed(2);
     const total = +(cartTotal + shipping + tax).toFixed(2);
 
     // ── Step 1 : Delivery Details ─────────────────────────────────────────────
@@ -653,7 +653,7 @@ export default function CheckoutPage() {
                             <span>{shipping === 0 ? <span className="text-green-400 font-semibold">FREE</span> : <PriceTag amount={shipping} />}</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
-                            <span>Tax (8%)</span><span><PriceTag amount={tax} /></span>
+                            <span>Tax (15%)</span><span><PriceTag amount={tax} /></span>
                         </div>
                         <div className="flex justify-between text-white font-black text-lg border-t border-border-dark pt-3">
                             <span>Total</span>

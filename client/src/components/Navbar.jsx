@@ -93,9 +93,9 @@ export default function Navbar() {
                                 </button>
                             </Link>
                         )}
-                        <button
-                            onClick={() => setIsCartOpen(true)}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-surface-dark rounded-full transition-colors relative"
+                        <Link
+                            to="/cart"
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-surface-dark rounded-full transition-colors relative block"
                         >
                             <span className="material-symbols-outlined">shopping_cart</span>
                             {cartCount > 0 && (
@@ -103,7 +103,7 @@ export default function Navbar() {
                                     {cartCount}
                                 </span>
                             )}
-                        </button>
+                        </Link>
 
                         {/* Hamburger — visible only on mobile */}
                         <button

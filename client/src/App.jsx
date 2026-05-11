@@ -5,8 +5,9 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import Navbar from './components/Navbar';
-import CartSidebar from './components/CartSidebar';
 import Footer from './components/Footer';
+import CartPage from './pages/CartPage';
+// const CartSidebar = lazy(() => import('./components/CartSidebar')); // Removed
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -34,13 +35,13 @@ export default function App() {
                 <HashRouter>
                     <div className="flex flex-col min-h-screen bg-background-dark text-white">
                         <Navbar />
-                        <CartSidebar />
                         <main className="flex-grow">
                             <Suspense fallback={<PageLoader />}>
                                 <Routes>
                                     <Route path="/" element={<HomePage />} />
                                     <Route path="/products" element={<ProductsPage />} />
                                     <Route path="/products/:id" element={<ProductDetailPage />} />
+                                    <Route path="/cart" element={<CartPage />} />
                                     <Route path="/login" element={<LoginPage />} />
                                     <Route path="/register" element={<RegisterPage />} />
                                     <Route path="/checkout" element={<CheckoutPage />} />

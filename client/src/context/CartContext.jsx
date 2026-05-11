@@ -6,7 +6,6 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
-    const [isCartOpen, setIsCartOpen] = useState(false);
     const [loaded, setLoaded] = useState(false);
 
     // Queue to serialize cart mutations (prevents session race conditions)
@@ -41,7 +40,6 @@ export const CartProvider = ({ children }) => {
                 });
                 setCartItems(data);
                 toast.success(`${product.name} added to cart!`);
-                setIsCartOpen(true);
             } catch (error) {
                 console.error('Failed to add to cart:', error);
                 // Fallback: update locally
@@ -57,7 +55,6 @@ export const CartProvider = ({ children }) => {
                     return [...prev, { ...product, qty }];
                 });
                 toast.success(`${product.name} added to cart!`);
-                setIsCartOpen(true);
             }
         });
         return queueRef.current;
@@ -102,8 +99,6 @@ export const CartProvider = ({ children }) => {
         <CartContext.Provider
             value={{
                 cartItems,
-                isCartOpen,
-                setIsCartOpen,
                 addToCart,
                 removeFromCart,
                 updateQty,

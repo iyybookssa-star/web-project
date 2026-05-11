@@ -37,7 +37,7 @@ router.post('/', protect, async (req, res) => {
       totalPrice,
     });
 
-    // Deduct stock from each product
+    // Deduct stock from each product immediately upon order creation
     for (const item of items) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { stock: -item.qty },
