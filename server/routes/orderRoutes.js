@@ -1,5 +1,6 @@
 const express = require('express');
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,6 +14,18 @@ router.post('/', protect, async (req, res) => {
   }
 
   try {
+    // Validate stock availability before creating order
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.status(404).json({ message: `Product not found: ${item.name}` });
+      }
+      if (product.stock < item.qty) {
+        return res.status(400).json({ message: `Insufficient stock for ${item.name}. Only ${product.stock} left.` });
+      }
+    }
+
+    // Create the order
     const order = await Order.create({
       user: req.user._id,
       items,
@@ -23,6 +36,13 @@ router.post('/', protect, async (req, res) => {
       taxPrice,
       totalPrice,
     });
+
+    // Deduct stock from each product
+    for (const item of items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.qty },
+      });
+    }
 
     // Also store in session so it clears when browser closes
     if (!req.session.orders) req.session.orders = [];

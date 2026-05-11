@@ -29,6 +29,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Session middleware (stored in MongoDB via connect-mongo)
 app.use(
@@ -57,6 +58,7 @@ app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/favorites", require("./routes/favoriteRoutes"));
 app.use("/api/cart", require("./routes/cartRoutes"));
+app.use("/api/newsletter", require("./routes/newsletterRoutes"));
 
 // Health check
 app.get("/api/health", (req, res) => {

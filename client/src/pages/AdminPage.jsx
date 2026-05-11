@@ -46,7 +46,27 @@ const EMPTY_PRODUCT = {
 
 function ProductForm({ initial, onSave, onCancel }) {
     const [form, setForm] = useState(initial || EMPTY_PRODUCT);
+    const [uploading, setUploading] = useState(false);
     const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const { data } = await api.post('/admin/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            set('image', data.imageUrl);
+            toast.success('Image uploaded!');
+        } catch (err) {
+            toast.error('Upload failed');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -94,8 +114,21 @@ function ProductForm({ initial, onSave, onCancel }) {
             </div>
 
             <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Image URL</label>
-                <input value={form.image} onChange={e => set('image', e.target.value)} required placeholder="https://..." className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-primary" />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Product Image</label>
+                <div className="flex gap-2">
+                    <input value={form.image} onChange={e => set('image', e.target.value)} required placeholder="Image URL or upload a file →" className="flex-1 bg-surface-dark border border-border-dark rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-primary" />
+                    <label className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-colors ${uploading ? 'bg-slate-700 text-slate-400' : 'bg-primary hover:bg-blue-600 text-white'}`}>
+                        <span className="material-symbols-outlined text-base">{uploading ? 'progress_activity' : 'upload_file'}</span>
+                        {uploading ? 'Uploading...' : 'Upload'}
+                        <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="hidden" />
+                    </label>
+                </div>
+                {form.image && (
+                    <div className="mt-2 flex items-center gap-2">
+                        <img src={form.image} alt="Preview" className="w-12 h-12 rounded-lg object-cover border border-border-dark" onError={e => e.target.style.display = 'none'} />
+                        <span className="text-xs text-slate-500 truncate">{form.image}</span>
+                    </div>
+                )}
             </div>
 
             <div>

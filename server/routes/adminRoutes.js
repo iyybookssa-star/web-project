@@ -1,9 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const multer = require('multer');
 const { protect, admin } = require('../middleware/auth');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
+
+// Multer config for product image uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads')),
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    },
+});
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp/;
+        const ok = allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype);
+        cb(ok ? null : new Error('Only image files are allowed'), ok);
+    },
+});
 
 // All routes require auth + admin
 router.use(protect, admin);
@@ -82,6 +102,13 @@ router.delete('/products/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// POST /api/admin/upload — Upload a product image file
+router.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  const imageUrl = `/uploads/${req.file.filename}`;
+  res.json({ imageUrl });
 });
 
 // ── Orders ─────────────────────────────────────────────────────────────────

@@ -199,6 +199,7 @@ export default function CheckoutPage() {
     };
 
     // ── Step 2 : Mapbox ───────────────────────────────────────────────────────
+    const [showHelp, setShowHelp] = useState(false);
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const markerRef = useRef(null);
@@ -416,10 +417,15 @@ export default function CheckoutPage() {
                     {/* STEP 1 – Delivery Details */}
                     {step === 1 && (
                         <form onSubmit={handleStep1} className="space-y-5">
-                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">local_shipping</span>
-                                Delivery Details
-                            </h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">local_shipping</span>
+                                    Delivery Details
+                                </h2>
+                                <button type="button" onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-white transition-colors bg-surface-dark border border-border-dark px-3 py-1.5 rounded-lg">
+                                    <span className="material-symbols-outlined text-[18px]">help</span> Help
+                                </button>
+                            </div>
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <Field label="Full Name" icon="person" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="John Smith" required />
                                 {/* Phone with country code */}
@@ -669,6 +675,41 @@ export default function CheckoutPage() {
                 </div>
 
             </div>
+            
+            {/* Help Modal */}
+            {showHelp && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
+                    <div className="bg-background-dark border border-border-dark rounded-2xl p-6 max-w-md w-full shadow-2xl relative" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+                        <h3 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">info</span> Checkout Help
+                        </h3>
+                        <div className="space-y-4 text-slate-300 text-sm">
+                            <div>
+                                <h4 className="font-bold text-white uppercase tracking-widest text-xs mb-1">Phone Number</h4>
+                                <p>Make sure to enter a valid phone number for your country. Our system will validate it automatically.</p>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-white uppercase tracking-widest text-xs mb-1">Country & Region</h4>
+                                <p>Select your country first. The City and State/Region dropdowns will update automatically based on your selection.</p>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-white uppercase tracking-widest text-xs mb-1">ZIP / Post Code</h4>
+                                <p>Required for most countries. Enter your exact postal code to ensure accurate delivery.</p>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-white uppercase tracking-widest text-xs mb-1">Map Location</h4>
+                                <p>On the next step, you will be asked to confirm your location on a map. You can drag the pin or click "Use Current Location".</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowHelp(false)} className="w-full mt-6 bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors">
+                            Got it
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

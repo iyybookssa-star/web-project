@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import { getCookie } from '../utils/cookieUtils';
+import toast from 'react-hot-toast';
 
 const CATEGORIES = [
     {
@@ -32,6 +33,8 @@ export default function HomePage() {
     const [topSellers, setTopSellers] = useState([]);
     const [pastPurchases, setPastPurchases] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [nlEmail, setNlEmail] = useState('');
+    const [nlLoading, setNlLoading] = useState(false);
 
     useEffect(() => {
         // Fetch top sellers
@@ -240,18 +243,40 @@ export default function HomePage() {
                                 Sign up for our newsletter and get 15% off your first order plus exclusive maintenance tips.
                             </p>
                         </div>
-                        <form className="w-full max-w-lg" onSubmit={(e) => e.preventDefault()}>
+                        <form className="w-full max-w-lg" onSubmit={async (e) => {
+                            e.preventDefault();
+                            if (!nlEmail) return;
+                            setNlLoading(true);
+                            try {
+                                const { data } = await api.post('/newsletter/subscribe', { email: nlEmail });
+                                toast.success(data.message || 'Subscribed successfully!');
+                                setNlEmail('');
+                            } catch (err) {
+                                toast.error(err.response?.data?.message || 'Failed to subscribe. Try again.');
+                            } finally {
+                                setNlLoading(false);
+                            }
+                        }}>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <input
                                     type="email"
+                                    value={nlEmail}
+                                    onChange={(e) => setNlEmail(e.target.value)}
                                     placeholder="Enter your email address"
-                                    className="flex-grow px-6 py-4 rounded-xl border-none focus:ring-2 focus:ring-slate-900 text-slate-900 placeholder:text-slate-400"
+                                    required
+                                    disabled={nlLoading}
+                                    className="flex-grow px-6 py-4 rounded-xl border-none focus:ring-2 focus:ring-slate-900 text-slate-900 placeholder:text-slate-400 disabled:opacity-50"
                                 />
                                 <button
                                     type="submit"
-                                    className="bg-slate-900 hover:bg-slate-800 text-white font-black px-8 py-4 rounded-xl transition-all shadow-xl"
+                                    disabled={nlLoading}
+                                    className="bg-slate-900 hover:bg-slate-800 text-white font-black px-8 py-4 rounded-xl transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    SUBSCRIBE
+                                    {nlLoading ? (
+                                        <><span className="material-symbols-outlined animate-spin text-base">progress_activity</span> Sending...</>
+                                    ) : (
+                                        'SUBSCRIBE'
+                                    )}
                                 </button>
                             </div>
                             <p className="text-[10px] text-white/60 mt-4 text-center sm:text-left uppercase tracking-widest">
