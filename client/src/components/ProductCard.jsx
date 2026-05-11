@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
+import PriceTag from './PriceTag';
 
 export default function ProductCard({ product }) {
     const { addToCart } = useCart();
@@ -74,9 +75,9 @@ export default function ProductCard({ product }) {
                 )}
 
                 <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-2xl font-black text-primary">${product.price?.toFixed(2)}</span>
+                    <span className="text-2xl font-black text-primary"><PriceTag amount={product.price} /></span>
                     {product.originalPrice && (
-                        <span className="text-sm text-slate-500 line-through">${product.originalPrice?.toFixed(2)}</span>
+                        <span className="text-sm text-slate-500 line-through"><PriceTag amount={product.originalPrice} /></span>
                     )}
                 </div>
             </div>

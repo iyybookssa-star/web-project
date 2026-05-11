@@ -6,6 +6,70 @@ import { generateReceipt } from '../utils/generateReceipt';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { addToPurchaseHistory } from '../utils/cookieUtils';
+import PriceTag from '../components/PriceTag';
+
+// ── Validation rules per country ────────────────────────────────────────────
+const PHONE_RULES = {
+    SA: { pattern: '[0-9]{9}', placeholder: '5XXXXXXXX', title: 'Enter 9 digits (e.g. 512345678)', maxLength: 9 },
+    AE: { pattern: '[0-9]{8,9}', placeholder: '5XXXXXXXX', title: 'Enter 8-9 digits', maxLength: 9 },
+    US: { pattern: '[0-9]{10}', placeholder: '2125551234', title: 'Enter 10 digits', maxLength: 10 },
+    GB: { pattern: '[0-9]{10,11}', placeholder: '7911123456', title: 'Enter 10-11 digits', maxLength: 11 },
+    DE: { pattern: '[0-9]{10,11}', placeholder: '15112345678', title: 'Enter 10-11 digits', maxLength: 11 },
+    FR: { pattern: '[0-9]{9,10}', placeholder: '612345678', title: 'Enter 9-10 digits', maxLength: 10 },
+    JP: { pattern: '[0-9]{10,11}', placeholder: '9012345678', title: 'Enter 10-11 digits', maxLength: 11 },
+    IN: { pattern: '[0-9]{10}', placeholder: '9876543210', title: 'Enter 10 digits', maxLength: 10 },
+    CA: { pattern: '[0-9]{10}', placeholder: '4165551234', title: 'Enter 10 digits', maxLength: 10 },
+    AU: { pattern: '[0-9]{9,10}', placeholder: '412345678', title: 'Enter 9-10 digits', maxLength: 10 },
+    KW: { pattern: '[0-9]{8}', placeholder: '51234567', title: 'Enter 8 digits', maxLength: 8 },
+    BH: { pattern: '[0-9]{8}', placeholder: '36001234', title: 'Enter 8 digits', maxLength: 8 },
+    QA: { pattern: '[0-9]{8}', placeholder: '55001234', title: 'Enter 8 digits', maxLength: 8 },
+    OM: { pattern: '[0-9]{8}', placeholder: '92123456', title: 'Enter 8 digits', maxLength: 8 },
+    EG: { pattern: '[0-9]{10,11}', placeholder: '1001234567', title: 'Enter 10-11 digits', maxLength: 11 },
+    TR: { pattern: '[0-9]{10}', placeholder: '5321234567', title: 'Enter 10 digits', maxLength: 10 },
+};
+const ZIP_RULES = {
+    SA: { pattern: '[0-9]{5}', placeholder: '12345', title: 'Enter 5 digits', maxLength: 5 },
+    AE: { pattern: '[0-9]{0,5}', placeholder: 'Optional', title: 'Optional or 5 digits', maxLength: 5, notRequired: true },
+    US: { pattern: '[0-9]{5}', placeholder: '10001', title: 'Enter 5 digits', maxLength: 5 },
+    GB: { pattern: '[A-Za-z0-9 ]{5,8}', placeholder: 'SW1A 1AA', title: 'Enter a valid UK postcode', maxLength: 8 },
+    DE: { pattern: '[0-9]{5}', placeholder: '10115', title: 'Enter 5 digits', maxLength: 5 },
+    FR: { pattern: '[0-9]{5}', placeholder: '75001', title: 'Enter 5 digits', maxLength: 5 },
+    JP: { pattern: '[0-9]{3}-?[0-9]{4}', placeholder: '100-0001', title: 'Enter 7 digits (e.g. 100-0001)', maxLength: 8 },
+    IN: { pattern: '[0-9]{6}', placeholder: '400001', title: 'Enter 6 digits', maxLength: 6 },
+    CA: { pattern: '[A-Za-z][0-9][A-Za-z] ?[0-9][A-Za-z][0-9]', placeholder: 'M5V 2T6', title: 'Enter a valid Canadian postal code', maxLength: 7 },
+    AU: { pattern: '[0-9]{4}', placeholder: '2000', title: 'Enter 4 digits', maxLength: 4 },
+    KW: { pattern: '[0-9]{5}', placeholder: '13001', title: 'Enter 5 digits', maxLength: 5 },
+    BH: { pattern: '[0-9]{3,4}', placeholder: '1234', title: 'Enter 3-4 digits', maxLength: 4 },
+    QA: { pattern: '[0-9]{0,5}', placeholder: 'Optional', title: 'Optional', maxLength: 5, notRequired: true },
+    OM: { pattern: '[0-9]{3}', placeholder: '100', title: 'Enter 3 digits', maxLength: 3 },
+    EG: { pattern: '[0-9]{5}', placeholder: '11511', title: 'Enter 5 digits', maxLength: 5 },
+    TR: { pattern: '[0-9]{5}', placeholder: '34000', title: 'Enter 5 digits', maxLength: 5 },
+};
+
+// ── Country → Cities + Regions data ─────────────────────────────────────────
+const COUNTRY_CITIES = {
+    SA: { name: 'Saudi Arabia', code: '+966', cities: ['Riyadh', 'Jeddah', 'Mecca', 'Medina', 'Dammam', 'Khobar', 'Dhahran', 'Tabuk', 'Abha', 'Taif', 'Hail', 'Buraidah', 'Najran', 'Jizan', 'Yanbu', 'Al Jubail', 'Khamis Mushait'], regions: ['Riyadh Region', 'Makkah Region', 'Madinah Region', 'Eastern Province', 'Asir', 'Tabuk', 'Hail', 'Northern Borders', 'Jazan', 'Najran', 'Al Baha', 'Al Jawf', 'Qassim'] },
+    AE: { name: 'United Arab Emirates', code: '+971', cities: ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain', 'Al Ain'], regions: ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain'] },
+    US: { name: 'United States', code: '+1', cities: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'San Francisco', 'Seattle', 'Denver', 'Miami', 'Atlanta', 'Boston', 'Las Vegas', 'Portland'], regions: ['California', 'Texas', 'Florida', 'New York', 'Pennsylvania', 'Illinois', 'Ohio', 'Georgia', 'North Carolina', 'Michigan', 'Arizona', 'Washington', 'Colorado', 'Nevada', 'Oregon', 'Massachusetts'] },
+    GB: { name: 'United Kingdom', code: '+44', cities: ['London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Bristol', 'Edinburgh', 'Leeds', 'Sheffield', 'Cardiff', 'Belfast', 'Nottingham', 'Newcastle', 'Brighton', 'Oxford', 'Cambridge'], regions: ['England', 'Scotland', 'Wales', 'Northern Ireland', 'Greater London', 'South East', 'North West', 'West Midlands', 'Yorkshire'] },
+    DE: { name: 'Germany', code: '+49', cities: ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne', 'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig', 'Bremen', 'Dresden', 'Hannover', 'Nuremberg'], regions: ['Bavaria', 'North Rhine-Westphalia', 'Baden-Württemberg', 'Lower Saxony', 'Hesse', 'Saxony', 'Berlin', 'Hamburg', 'Bremen'] },
+    FR: { name: 'France', code: '+33', cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille', 'Rennes', 'Reims'], regions: ['Île-de-France', 'Auvergne-Rhône-Alpes', 'Nouvelle-Aquitaine', 'Occitanie', 'Hauts-de-France', 'Provence-Alpes-Côte d\'Azur', 'Grand Est', 'Pays de la Loire', 'Brittany'] },
+    JP: { name: 'Japan', code: '+81', cities: ['Tokyo', 'Osaka', 'Yokohama', 'Nagoya', 'Sapporo', 'Kobe', 'Kyoto', 'Fukuoka', 'Kawasaki', 'Hiroshima', 'Sendai'], regions: ['Kanto', 'Kansai', 'Chubu', 'Kyushu', 'Tohoku', 'Hokkaido', 'Chugoku', 'Shikoku'] },
+    IN: { name: 'India', code: '+91', cities: ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur'], regions: ['Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Telangana', 'Gujarat', 'West Bengal', 'Rajasthan', 'Uttar Pradesh', 'Kerala'] },
+    CA: { name: 'Canada', code: '+1', cities: ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Halifax'], regions: ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan', 'Nova Scotia', 'New Brunswick'] },
+    AU: { name: 'Australia', code: '+61', cities: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Canberra', 'Hobart', 'Darwin'], regions: ['New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'South Australia', 'Tasmania', 'ACT', 'Northern Territory'] },
+    KW: { name: 'Kuwait', code: '+965', cities: ['Kuwait City', 'Hawalli', 'Salmiya', 'Farwaniya', 'Jahra', 'Mangaf', 'Fahaheel', 'Ahmadi'], regions: ['Al Asimah', 'Hawalli', 'Farwaniya', 'Mubarak Al-Kabeer', 'Ahmadi', 'Jahra'] },
+    BH: { name: 'Bahrain', code: '+973', cities: ['Manama', 'Riffa', 'Muharraq', 'Hamad Town', 'Isa Town', 'Sitra', 'Budaiya'], regions: ['Capital', 'Muharraq', 'Northern', 'Southern'] },
+    QA: { name: 'Qatar', code: '+974', cities: ['Doha', 'Al Wakrah', 'Al Khor', 'Al Rayyan', 'Umm Salal', 'Lusail', 'Mesaieed'], regions: ['Doha', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Umm Salal', 'Al Daayen', 'Al Shamal', 'Madinat ash Shamal'] },
+    OM: { name: 'Oman', code: '+968', cities: ['Muscat', 'Salalah', 'Sohar', 'Nizwa', 'Sur', 'Ibri', 'Rustaq', 'Barka'], regions: ['Muscat', 'Dhofar', 'Al Batinah North', 'Al Batinah South', 'Al Dakhiliyah', 'Al Sharqiyah North', 'Al Sharqiyah South', 'Al Dhahirah'] },
+    EG: { name: 'Egypt', code: '+20', cities: ['Cairo', 'Alexandria', 'Giza', 'Sharm El Sheikh', 'Luxor', 'Aswan', 'Hurghada', 'Port Said', 'Suez', 'Mansoura'], regions: ['Cairo', 'Giza', 'Alexandria', 'Dakahlia', 'Red Sea', 'Luxor', 'Aswan', 'South Sinai', 'Suez', 'Port Said'] },
+    TR: { name: 'Turkey', code: '+90', cities: ['Istanbul', 'Ankara', 'Izmir', 'Bursa', 'Antalya', 'Adana', 'Gaziantep', 'Konya', 'Mersin', 'Kayseri'], regions: ['Marmara', 'Central Anatolia', 'Aegean', 'Mediterranean', 'Black Sea', 'Eastern Anatolia', 'Southeastern Anatolia'] },
+};
+
+// Sorted list of countries for dropdown
+const COUNTRY_LIST = Object.entries(COUNTRY_CITIES)
+    .map(([code, data]) => ({ code, name: data.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
 // ── Step indicator ──────────────────────────────────────────────────────────
 function StepBar({ step }) {
@@ -56,6 +120,26 @@ function Field({ label, icon, required, ...props }) {
     );
 }
 
+// ── SELECT helper ───────────────────────────────────────────────────────────
+function SelectField({ label, icon, required, children, ...props }) {
+    return (
+        <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">{label}</label>
+            <div className="relative">
+                {icon && <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">{icon}</span>}
+                <select
+                    {...props}
+                    required={required}
+                    className={`w-full bg-background-dark border border-border-dark rounded-xl py-3 pr-4 text-white focus:outline-none focus:border-primary transition-colors appearance-none ${icon ? 'pl-10' : 'pl-4'}`}
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M2 4l4 4 4-4'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+                >
+                    {children}
+                </select>
+            </div>
+        </div>
+    );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
     const { cartItems, cartTotal, clearCart } = useCart();
@@ -68,16 +152,35 @@ export default function CheckoutPage() {
 
     const [form, setForm] = useState({
         fullName: user?.name || '',
+        phoneCode: '+966',
         phone: '',
         street: '',
         city: '',
         state: '',
         zip: '',
-        country: 'US',
+        country: 'SA',
         lat: null,
         lng: null,
         mapAddress: '',
     });
+
+    // When country changes, reset city/state and update phone code
+    const handleCountryChange = (countryCode) => {
+        const countryData = COUNTRY_CITIES[countryCode];
+        setForm(f => ({
+            ...f,
+            country: countryCode,
+            city: '',
+            state: '',
+            phoneCode: countryData?.code || f.phoneCode,
+        }));
+    };
+
+    // Get cities and regions for currently selected country
+    const availableCities = COUNTRY_CITIES[form.country]?.cities || [];
+    const availableRegions = COUNTRY_CITIES[form.country]?.regions || [];
+    const phoneRule = PHONE_RULES[form.country] || PHONE_RULES.SA;
+    const zipRule = ZIP_RULES[form.country] || ZIP_RULES.SA;
 
     // Redirect if not logged in or cart is empty
     useEffect(() => {
@@ -216,7 +319,7 @@ export default function CheckoutPage() {
                     qty: item.qty,
                 })),
                 shippingAddress: {
-                    street: form.mapAddress || form.street,
+                    street: form.street,
                     city: form.city,
                     state: form.state,
                     zip: form.zip,
@@ -271,7 +374,7 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-slate-400">Total</span>
-                            <span className="font-black text-primary text-lg">${Number(placedOrder.totalPrice).toFixed(2)}</span>
+                            <span className="font-black text-primary text-lg"><PriceTag amount={placedOrder.totalPrice} /></span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-slate-400">Status</span>
@@ -319,15 +422,72 @@ export default function CheckoutPage() {
                             </h2>
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <Field label="Full Name" icon="person" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="John Smith" required />
-                                <Field label="Phone Number" icon="phone" type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+1 555 000 0000" required />
+                                {/* Phone with country code */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Phone Number</label>
+                                    <div className="relative flex gap-2">
+                                        <select
+                                            value={form.phoneCode}
+                                            onChange={e => setForm({ ...form, phoneCode: e.target.value })}
+                                            className="w-[100px] flex-shrink-0 bg-background-dark border border-border-dark rounded-xl py-3 px-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none text-sm"
+                                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M2 4l4 4 4-4'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+                                        >
+                                            {Object.entries(COUNTRY_CITIES)
+                                                .sort((a, b) => a[1].name.localeCompare(b[1].name))
+                                                .map(([code, data]) => (
+                                                    <option key={code} value={data.code}>{data.code}</option>
+                                                ))
+                                            }
+                                        </select>
+                                        <div className="relative flex-1">
+                                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">phone</span>
+                                            <input
+                                                type="tel"
+                                                value={form.phone}
+                                                onChange={e => setForm({ ...form, phone: e.target.value.replace(/[^0-9]/g, '') })}
+                                                placeholder={phoneRule.placeholder}
+                                                pattern={phoneRule.pattern}
+                                                title={phoneRule.title}
+                                                maxLength={phoneRule.maxLength}
+                                                required
+                                                className="w-full bg-background-dark border border-border-dark rounded-xl py-3 pr-4 pl-10 text-white placeholder-slate-600 focus:outline-none focus:border-primary transition-colors"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <Field label="Street Address" icon="home" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} placeholder="123 Main St, Apt 4B" required />
-                            <div className="grid sm:grid-cols-3 gap-4">
-                                <Field label="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="Riyadh" required />
-                                <Field label="State / Region" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} placeholder="Riyadh Region" required />
-                                <Field label="ZIP / Post Code" value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} placeholder="12345" required />
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <SelectField label="Country" icon="public" value={form.country} onChange={e => handleCountryChange(e.target.value)} required>
+                                    {COUNTRY_LIST.map(c => (
+                                        <option key={c.code} value={c.code}>{c.name}</option>
+                                    ))}
+                                </SelectField>
+                                <SelectField label="City" icon="location_city" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} required>
+                                    <option value="" disabled>Select a city</option>
+                                    {availableCities.map(city => (
+                                        <option key={city} value={city}>{city}</option>
+                                    ))}
+                                </SelectField>
                             </div>
-                            <Field label="Country" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} placeholder="US" required />
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <SelectField label="State / Region" icon="map" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} required>
+                                    <option value="" disabled>Select a region</option>
+                                    {availableRegions.map(region => (
+                                        <option key={region} value={region}>{region}</option>
+                                    ))}
+                                </SelectField>
+                                <Field
+                                    label="ZIP / Post Code"
+                                    value={form.zip}
+                                    onChange={e => setForm({ ...form, zip: e.target.value })}
+                                    placeholder={zipRule.placeholder}
+                                    pattern={zipRule.pattern}
+                                    title={zipRule.title}
+                                    maxLength={zipRule.maxLength}
+                                    required={!zipRule.notRequired}
+                                />
+                            </div>
                             <button type="submit" className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">
                                 Next: Confirm on Map <span className="material-symbols-outlined">arrow_forward</span>
                             </button>
@@ -365,7 +525,7 @@ export default function CheckoutPage() {
                                                 <p className="text-white font-semibold">{form.fullName}</p>
                                                 <p className="text-slate-400 text-sm">{form.street}</p>
                                                 <p className="text-slate-400 text-sm">{form.city}, {form.state} {form.zip}</p>
-                                                <p className="text-slate-400 text-sm">{form.country}</p>
+                                                <p className="text-slate-400 text-sm">{COUNTRY_CITIES[form.country]?.name || form.country}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -419,9 +579,9 @@ export default function CheckoutPage() {
                             <div className="bg-background-dark rounded-xl p-4 space-y-1 text-sm">
                                 <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Delivering to</p>
                                 <p className="text-white font-semibold">{form.fullName}</p>
-                                <p className="text-slate-400">{form.phone}</p>
-                                <p className="text-slate-400">{form.mapAddress || form.street}</p>
-                                <p className="text-slate-400">{form.city}, {form.state} {form.zip}, {form.country}</p>
+                                <p className="text-slate-400">{form.phoneCode} {form.phone}</p>
+                                <p className="text-slate-400">{form.street}</p>
+                                <p className="text-slate-400">{form.city}, {form.state} {form.zip}, {COUNTRY_CITIES[form.country]?.name || form.country}</p>
                             </div>
 
                             {/* Payment method selector */}
@@ -473,32 +633,32 @@ export default function CheckoutPage() {
                                     <p className="text-sm font-semibold text-white line-clamp-1">{item.name}</p>
                                     <p className="text-xs text-slate-500">Qty: {item.qty}</p>
                                 </div>
-                                <span className="text-sm font-black text-primary flex-shrink-0">${(item.price * item.qty).toFixed(2)}</span>
+                                <span className="text-sm font-black text-primary flex-shrink-0"><PriceTag amount={item.price * item.qty} /></span>
                             </div>
                         ))}
                     </div>
 
                     <div className="border-t border-border-dark pt-4 space-y-2.5 text-sm">
                         <div className="flex justify-between text-slate-400">
-                            <span>Subtotal</span><span>${cartTotal.toFixed(2)}</span>
+                            <span>Subtotal</span><span><PriceTag amount={cartTotal} /></span>
                         </div>
                         <div className="flex justify-between text-slate-400">
                             <span>Shipping</span>
-                            <span>{shipping === 0 ? <span className="text-green-400 font-semibold">FREE</span> : `$${shipping.toFixed(2)}`}</span>
+                            <span>{shipping === 0 ? <span className="text-green-400 font-semibold">FREE</span> : <PriceTag amount={shipping} />}</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
-                            <span>Tax (8%)</span><span>${tax.toFixed(2)}</span>
+                            <span>Tax (8%)</span><span><PriceTag amount={tax} /></span>
                         </div>
                         <div className="flex justify-between text-white font-black text-lg border-t border-border-dark pt-3">
                             <span>Total</span>
-                            <span className="text-primary">${total.toFixed(2)}</span>
+                            <span className="text-primary"><PriceTag amount={total} /></span>
                         </div>
                     </div>
 
                     {shipping === 0 && (
                         <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 flex items-center gap-2 text-green-400 text-xs">
                             <span className="material-symbols-outlined text-base">local_shipping</span>
-                            Free shipping on orders over $150!
+                            Free shipping on orders over 150 SAR!
                         </div>
                     )}
 

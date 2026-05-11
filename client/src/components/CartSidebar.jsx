@@ -1,5 +1,6 @@
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
+import PriceTag from './PriceTag';
 
 const CartSidebar = () => {
     const { cartItems, isCartOpen, setIsCartOpen, removeFromCart, updateQty, cartTotal } = useCart();
@@ -73,7 +74,7 @@ const CartSidebar = () => {
                                                 +
                                             </button>
                                         </div>
-                                        <span className="font-black text-primary">${(item.price * item.qty).toFixed(2)}</span>
+                                        <span className="font-black text-primary"><PriceTag amount={item.price * item.qty} /></span>
                                     </div>
                                 </div>
                                 <button
@@ -92,7 +93,7 @@ const CartSidebar = () => {
                     <div className="p-6 border-t border-slate-200 dark:border-border-dark space-y-3">
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 text-sm">Subtotal</span>
-                            <span className="font-black text-xl text-primary">${cartTotal.toFixed(2)}</span>
+                            <span className="font-black text-xl text-primary"><PriceTag amount={cartTotal} /></span>
                         </div>
                         <p className="text-xs text-slate-400 text-center">Shipping & taxes calculated at checkout</p>
                         <Link

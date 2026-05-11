@@ -118,8 +118,8 @@ export async function generateReceipt(order, user) {
     const name = item.name?.length > 55 ? item.name.slice(0, 52) + '…' : item.name;
     doc.text(name, MARGIN + 3, y + 6);
     doc.text(String(item.qty), PAGE_W - MARGIN - 46, y + 6, { align: 'right' });
-    doc.text(`$${Number(item.price).toFixed(2)}`, PAGE_W - MARGIN - 22, y + 6, { align: 'right' });
-    doc.text(`$${(item.price * item.qty).toFixed(2)}`, PAGE_W - MARGIN - 2, y + 6, { align: 'right' });
+    doc.text(`${Number(item.price).toFixed(2)} SAR`, PAGE_W - MARGIN - 22, y + 6, { align: 'right' });
+    doc.text(`${(item.price * item.qty).toFixed(2)} SAR`, PAGE_W - MARGIN - 2, y + 6, { align: 'right' });
 
     y += 10;
   });
@@ -143,16 +143,16 @@ export async function generateReceipt(order, user) {
   doc.line(totalsX - 2, y - 2, PAGE_W - MARGIN, y - 2);
   y += 2;
 
-  drawRow('Subtotal', `$${Number(order.itemsPrice).toFixed(2)}`);
-  drawRow('Shipping', order.shippingPrice > 0 ? `$${Number(order.shippingPrice).toFixed(2)}` : 'FREE');
-  drawRow('Tax', `$${Number(order.taxPrice).toFixed(2)}`);
+  drawRow('Subtotal', `${Number(order.itemsPrice).toFixed(2)} SAR`);
+  drawRow('Shipping', order.shippingPrice > 0 ? `${Number(order.shippingPrice).toFixed(2)} SAR` : 'FREE');
+  drawRow('Tax', `${Number(order.taxPrice).toFixed(2)} SAR`);
 
   // Total divider
   doc.setDrawColor(...primary);
   doc.setLineWidth(0.5);
   doc.line(totalsX - 2, y - 1, PAGE_W - MARGIN, y - 1);
   y += 3;
-  drawRow('TOTAL', `$${Number(order.totalPrice).toFixed(2)}`, true, primary);
+  drawRow('TOTAL', `${Number(order.totalPrice).toFixed(2)} SAR`, true, primary);
 
   // ── Payment method badge ───────────────────────────────────
   y += 6;

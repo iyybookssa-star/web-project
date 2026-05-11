@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import PriceTag from '../components/PriceTag';
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 const STATUS_COLORS = {
@@ -59,8 +60,8 @@ function ProductForm({ initial, onSave, onCancel }) {
                 {[
                     ['Product Name', 'name', 'text', true],
                     ['Part Number', 'partNumber', 'text', true],
-                    ['Price ($)', 'price', 'number', true],
-                    ['Original Price ($)', 'originalPrice', 'number', false],
+                    ['Price (SAR)', 'price', 'number', true],
+                    ['Original Price (SAR)', 'originalPrice', 'number', false],
                     ['Stock', 'stock', 'number', true],
                     ['Rating (0-5)', 'rating', 'number', false],
                 ].map(([label, key, type, req]) => (
@@ -248,10 +249,10 @@ export default function AdminPage() {
                 <div className="space-y-8">
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="relative group">
-                            <StatCard icon="attach_money" label="Total Revenue" value={`$${(stats?.revenue || 0).toFixed(2)}`} color="bg-green-500/20 text-green-400" />
+                            <StatCard icon="payments" label="Total Revenue" value={<PriceTag amount={stats?.revenue || 0} />} color="bg-green-500/20 text-green-400" />
                             <button
                                 onClick={async () => {
-                                    if (!window.confirm('Reset revenue to $0? This will mark all delivered orders as Pending.')) return;
+                                    if (!window.confirm('Reset revenue to 0? This will mark all delivered orders as Pending.')) return;
                                     try { await api.post('/admin/reset-revenue'); fetchStats(); toast.success('Revenue reset'); }
                                     catch (e) { toast.error('Error'); }
                                 }}
@@ -283,7 +284,7 @@ export default function AdminPage() {
                                         <tr key={o._id} className="hover:bg-background-dark/50 transition-colors">
                                             <Td><span className="font-mono text-xs">#{o._id.slice(-8).toUpperCase()}</span></Td>
                                             <Td>{o.user?.name || 'Guest'}</Td>
-                                            <Td><span className="font-bold text-primary">${o.totalPrice?.toFixed(2)}</span></Td>
+                                            <Td><span className="font-bold text-primary"><PriceTag amount={o.totalPrice} /></span></Td>
                                             <Td><span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[o.status]}`}>{o.status}</span></Td>
                                             <Td>{new Date(o.createdAt).toLocaleDateString()}</Td>
                                         </tr>
@@ -336,7 +337,7 @@ export default function AdminPage() {
                                                 </div>
                                             </Td>
                                             <Td><span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full">{p.category}</span></Td>
-                                            <Td><span className="font-bold text-white">${p.price}</span>{p.originalPrice && <span className="text-slate-500 line-through ml-2 text-xs">${p.originalPrice}</span>}</Td>
+                                            <Td><span className="font-bold text-white"><PriceTag amount={p.price} /></span>{p.originalPrice && <span className="text-slate-500 line-through ml-2 text-xs"><PriceTag amount={p.originalPrice} /></span>}</Td>
                                             <Td><span className={p.stock > 0 ? 'text-green-400' : 'text-red-400'}>{p.stock}</span></Td>
                                             <Td>{p.isFeatured ? <span className="material-symbols-outlined text-primary text-base">star</span> : <span className="material-symbols-outlined text-slate-600 text-base">star</span>}</Td>
                                             <Td>
@@ -379,7 +380,7 @@ export default function AdminPage() {
                                             <p className="text-xs text-slate-500">{o.user?.email}</p>
                                         </Td>
                                         <Td>{o.items?.length} item{o.items?.length !== 1 ? 's' : ''}</Td>
-                                        <Td><span className="font-bold text-primary">${o.totalPrice?.toFixed(2)}</span></Td>
+                                        <Td><span className="font-bold text-primary"><PriceTag amount={o.totalPrice} /></span></Td>
                                         <Td><span className="text-xs">{o.paymentMethod}</span></Td>
                                         <Td>
                                             <select

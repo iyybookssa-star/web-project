@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="currentColor">
+  <!-- New Saudi Riyal (SAR) currency symbol -->
+  <!-- Vertical stroke with top flourish -->
+  <path d="M62 6 Q58 2 54 6 L54 16 L58 10 Q60 7 64 9 L68 12 L68 50 L62 50 Z"/>
+  <!-- Right vertical bar -->
+  <path d="M68 8 Q72 4 76 8 L76 50 L68 50 Z"/>
+  <!-- First (right) diagonal stroke -->
+  <path d="M74 44 Q78 40 80 44 L46 104 Q42 110 38 106 Z"/>
+  <!-- Second (left) diagonal stroke -->
+  <path d="M62 44 Q66 40 68 44 L34 104 Q30 110 26 106 Z"/>
+</svg>

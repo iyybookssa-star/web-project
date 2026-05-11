@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
+import PriceTag from '../components/PriceTag';
 
 export default function ProductDetailPage() {
     const { id } = useParams();
@@ -59,7 +60,7 @@ export default function ProductDetailPage() {
                             <p className="text-gray-500 text-sm mb-4">Part # {product.partNumber}</p>
                         )}
                         <p className="text-gray-400 leading-relaxed mb-6">{product.description}</p>
-                        <p className="text-3xl font-black text-primary">${product.price?.toFixed(2)}</p>
+                        <p className="text-3xl font-black text-primary"><PriceTag amount={product.price} /></p>
                         <p className={`text-sm mt-1 ${product.stock > 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                         </p>

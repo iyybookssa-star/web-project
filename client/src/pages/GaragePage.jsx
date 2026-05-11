@@ -6,6 +6,7 @@ import { getPurchaseHistory } from '../utils/cookieUtils';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { generateReceipt } from '../utils/generateReceipt';
+import PriceTag from '../components/PriceTag';
 
 export default function GaragePage() {
     const { user } = useAuth();
@@ -144,7 +145,7 @@ export default function GaragePage() {
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Total</p>
-                                                <p className="text-sm text-white font-medium">${order.totalPrice.toFixed(2)}</p>
+                                                <p className="text-sm text-white font-medium"><PriceTag amount={order.totalPrice} /></p>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Order #</p>
@@ -174,7 +175,7 @@ export default function GaragePage() {
                                                         <Link to={`/products/${item.product}`} className="text-white font-bold hover:text-primary transition-colors line-clamp-1">
                                                             {item.name}
                                                         </Link>
-                                                        <p className="text-sm text-slate-400">Qty: {item.qty} × ${item.price}</p>
+                                                        <p className="text-sm text-slate-400">Qty: {item.qty} × <PriceTag amount={item.price} /></p>
                                                     </div>
                                                     <Link to={`/products/${item.product}`} className="bg-primary hover:bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors">
                                                         Buy Again
