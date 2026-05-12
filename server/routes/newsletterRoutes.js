@@ -3,12 +3,11 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 // Create a transporter — uses Gmail SMTP
-// For production, use a dedicated email service (SendGrid, Mailgun, etc.)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // Use an App Password, NOT your Gmail password
+        pass: process.env.EMAIL_PASS,
     },
 });
 
@@ -21,8 +20,7 @@ router.post('/subscribe', async (req, res) => {
     }
 
     try {
-        // Send email in background to prevent hanging
-        transporter.sendMail({
+        const info = await transporter.sendMail({
             from: `"Partify Pro" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: '🎉 Welcome to Partify Pro!',
@@ -55,12 +53,13 @@ router.post('/subscribe', async (req, res) => {
                     </div>
                 </div>
             `,
-        }).catch(err => console.error('Background Email send error:', err.message));
+        });
 
+        console.log('[Newsletter] Email sent! ID:', info.messageId);
         res.json({ message: 'Subscription successful! Check your inbox.' });
     } catch (err) {
-        console.error('Newsletter error:', err.message);
-        res.status(500).json({ message: 'Failed to subscribe. Please try again later.' });
+        console.error('[Newsletter] Email send FAILED:', err.message);
+        res.status(500).json({ message: 'Failed to send email. Please try again later.' });
     }
 });
 
