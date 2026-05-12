@@ -21,7 +21,8 @@ router.post('/subscribe', async (req, res) => {
     }
 
     try {
-        await transporter.sendMail({
+        // Send email in background to prevent hanging
+        transporter.sendMail({
             from: `"Partify Pro" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: '🎉 Welcome to Partify Pro!',
@@ -54,12 +55,12 @@ router.post('/subscribe', async (req, res) => {
                     </div>
                 </div>
             `,
-        });
+        }).catch(err => console.error('Background Email send error:', err.message));
 
         res.json({ message: 'Subscription successful! Check your inbox.' });
     } catch (err) {
-        console.error('Email send error:', err.message);
-        res.status(500).json({ message: 'Failed to send email. Please try again later.' });
+        console.error('Newsletter error:', err.message);
+        res.status(500).json({ message: 'Failed to subscribe. Please try again later.' });
     }
 });
 
