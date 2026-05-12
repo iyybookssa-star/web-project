@@ -2,9 +2,12 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const router = express.Router();
 
-// Create a transporter — uses Gmail SMTP
+// Create a transporter — uses Gmail SMTP (force IPv4 for Render compatibility)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    family: 4,  // Force IPv4 — fixes ENETUNREACH on Render
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
