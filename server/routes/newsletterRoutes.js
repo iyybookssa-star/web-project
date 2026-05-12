@@ -12,6 +12,9 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+    connectionTimeout: 5000, // 5 seconds
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
 });
 
 // POST /api/newsletter/subscribe
@@ -23,7 +26,7 @@ router.post('/subscribe', async (req, res) => {
     }
 
     try {
-        const info = await transporter.sendMail({
+        transporter.sendMail({
             from: `"Partify Pro" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: '🎉 Welcome to Partify Pro!',
@@ -56,13 +59,13 @@ router.post('/subscribe', async (req, res) => {
                     </div>
                 </div>
             `,
-        });
+        }).then(info => console.log('[Newsletter] Email sent! ID:', info.messageId))
+          .catch(err => console.error('[Newsletter] Background Email FAILED:', err.message));
 
-        console.log('[Newsletter] Email sent! ID:', info.messageId);
         res.json({ message: 'Subscription successful! Check your inbox.' });
     } catch (err) {
-        console.error('[Newsletter] Email send FAILED:', err.message);
-        res.status(500).json({ message: 'Failed to send email. Please try again later.' });
+        console.error('[Newsletter] Route error:', err.message);
+        res.status(500).json({ message: 'Failed to subscribe. Please try again later.' });
     }
 });
 
