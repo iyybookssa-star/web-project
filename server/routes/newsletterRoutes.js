@@ -1,36 +1,39 @@
-const express = require('express');
-const nodemailer = require('nodemailer');
+const express = require("express");
+const nodemailer = require("nodemailer");
 const router = express.Router();
 
 // Create a transporter — uses Gmail SMTP (force IPv4 for Render compatibility)
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    family: 4,  // Force IPv4 — fixes ENETUNREACH on Render
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 5000, // 5 seconds
-    greetingTimeout: 5000,
-    socketTimeout: 5000,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  family: 4, // Force IPv4 — fixes ENETUNREACH on Render
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  connectionTimeout: 5000, // 5 seconds
+  greetingTimeout: 5000,
+  socketTimeout: 5000,
 });
 
 // POST /api/newsletter/subscribe
-router.post('/subscribe', async (req, res) => {
-    const { email } = req.body;
+router.post("/subscribe", async (req, res) => {
+  const { email } = req.body;
 
-    if (!email || !email.includes('@')) {
-        return res.status(400).json({ message: 'Please provide a valid email address.' });
-    }
+  if (!email || !email.includes("@")) {
+    return res
+      .status(400)
+      .json({ message: "Please provide a valid email address." });
+  }
 
-    try {
-        transporter.sendMail({
-            from: `"Partify Pro" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '🎉 Welcome to Partify Pro!',
-            html: `
+  try {
+    transporter
+      .sendMail({
+        from: `"Partify Pro" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "🎉 Welcome to Partify Pro!",
+        html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f1117; color: #ffffff; border-radius: 16px; overflow: hidden;">
                     <div style="background: linear-gradient(135deg, #394AE2, #2835c4); padding: 40px 30px; text-align: center;">
                         <h1 style="margin: 0; font-size: 28px; font-weight: 900; letter-spacing: 2px;">PARTIFY PRO</h1>
@@ -59,14 +62,21 @@ router.post('/subscribe', async (req, res) => {
                     </div>
                 </div>
             `,
-        }).then(info => console.log('[Newsletter] Email sent! ID:', info.messageId))
-          .catch(err => console.error('[Newsletter] Background Email FAILED:', err.message));
+      })
+      .then((info) =>
+        console.log("[Newsletter] Email sent! ID:", info.messageId),
+      )
+      .catch((err) =>
+        console.error("[Newsletter] Background Email FAILED:", err.message),
+      );
 
-        res.json({ message: 'Subscription successful! Check your inbox.' });
-    } catch (err) {
-        console.error('[Newsletter] Route error:', err.message);
-        res.status(500).json({ message: 'Failed to subscribe. Please try again later.' });
-    }
+    res.json({ message: "Subscription successful! Check your inbox." });
+  } catch (err) {
+    console.error("[Newsletter] Route error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Failed to subscribe. Please try again later." });
+  }
 });
 
 module.exports = router;

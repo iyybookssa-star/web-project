@@ -7,7 +7,7 @@ export default function PolicyPage() {
     const policies = {
         return: {
             title: "Return Policy",
-            content: "We accept returns within 30 days of your purchase. Items must be in their original condition, uninstalled, and with all original packaging. To initiate a return, please contact our support team. Refunds will be processed to the original payment method within 5-7 business days after we receive the returned item."
+            content: "We accept returns within 7 days of your purchase. Items must be in their original condition, uninstalled, and with all original packaging. To initiate a return, please contact our support team. Refunds will be processed to the original payment method within 5-7 business days after we receive the returned item."
         },
         privacy: {
             title: "Privacy Policy",

@@ -127,9 +127,6 @@ export default function HomePage() {
                             <span className="material-symbols-outlined">search</span>
                             FIND COMPATIBLE PARTS
                         </button>
-                        <p className="text-center mt-4 text-xs text-slate-500 italic">
-                            Looking for a specific VIN? <a href="#" className="text-primary hover:underline">Click here</a>
-                        </p>
                     </div>
                 </div>
             </section>

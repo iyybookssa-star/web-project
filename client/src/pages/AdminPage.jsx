@@ -173,11 +173,18 @@ export default function AdminPage() {
 
     // ── Products ──────────────────────────────────────────────────────────────
     const [products, setProducts] = useState([]);
+    const [productSearch, setProductSearch] = useState('');
     const [productForm, setProductForm] = useState(null); // null | 'new' | product obj
     const fetchProducts = useCallback(async () => {
         try { const { data } = await api.get('/admin/products'); setProducts(data); } catch { }
     }, []);
     useEffect(() => { if (tab === 'products') fetchProducts(); }, [tab]);
+
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        p.partNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
+        p.category.toLowerCase().includes(productSearch.toLowerCase())
+    );
 
     const handleSaveProduct = async (form) => {
         try {
@@ -333,11 +340,23 @@ export default function AdminPage() {
             {/* ── PRODUCTS ── */}
             {tab === 'products' && (
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <p className="text-slate-400 text-sm">{products.length} products total</p>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                            <p className="text-slate-400 text-sm whitespace-nowrap">{filteredProducts.length} products total</p>
+                            <div className="relative w-full sm:w-64">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">search</span>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search products..." 
+                                    value={productSearch}
+                                    onChange={(e) => setProductSearch(e.target.value)}
+                                    className="w-full bg-surface-dark border border-border-dark rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                                />
+                            </div>
+                        </div>
                         {!productForm && (
                             <button onClick={() => setProductForm('new')}
-                                className="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors">
+                                className="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors shrink-0">
                                 <span className="material-symbols-outlined text-[18px]">add</span> Add Product
                             </button>
                         )}
@@ -358,7 +377,7 @@ export default function AdminPage() {
                                     <Th>Product</Th><Th>Category</Th><Th>Price</Th><Th>Stock</Th><Th>Featured</Th><Th>Actions</Th>
                                 </tr></thead>
                                 <tbody className="divide-y divide-border-dark">
-                                    {products.map(p => (
+                                    {filteredProducts.map(p => (
                                         <tr key={p._id} className="hover:bg-background-dark/50 transition-colors">
                                             <Td>
                                                 <div className="flex items-center gap-3">
@@ -385,7 +404,7 @@ export default function AdminPage() {
                                             </Td>
                                         </tr>
                                     ))}
-                                    {!products.length && <tr><td colSpan={6} className="text-center py-8 text-slate-500">No products found</td></tr>}
+                                    {!filteredProducts.length && <tr><td colSpan={6} className="text-center py-8 text-slate-500">No products found</td></tr>}
                                 </tbody>
                             </table>
                         </div>
