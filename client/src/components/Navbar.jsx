@@ -63,7 +63,7 @@ export default function Navbar() {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-full bg-slate-100 dark:bg-surface-dark border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50 placeholder-slate-500"
-                                placeholder="Search by part name, number, or VIN..."
+                                placeholder="Search by part name or number..."
                             />
                         </form>
                     </div>
