@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { generateReceipt } from '../utils/generateReceipt';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
-import { addToPurchaseHistory } from '../utils/cookieUtils';
+import { addToPurchaseHistory, addToPurchaseHistoryProducts } from '../utils/cookieUtils';
 import PriceTag from '../components/PriceTag';
 
 // ── Validation rules per country ────────────────────────────────────────────
@@ -338,6 +338,7 @@ export default function CheckoutPage() {
             // Save to past purchases cookie
             const newIds = cartItems.map(item => item._id);
             addToPurchaseHistory(newIds);
+            addToPurchaseHistoryProducts(cartItems);
 
             setPlacedOrder(data);
             clearCart();

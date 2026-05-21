@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
-import { getPurchaseHistory } from '../utils/cookieUtils';
+import { getPurchaseHistory, getPurchaseHistoryProducts, addToPurchaseHistoryProducts } from '../utils/cookieUtils';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { generateReceipt } from '../utils/generateReceipt';
@@ -12,7 +12,9 @@ export default function GaragePage() {
     const { user } = useAuth();
     const { favoriteIds } = useFavorites();
     const [orders, setOrders] = useState([]);
-    const [pastPurchases, setPastPurchases] = useState([]);
+    const [pastPurchases, setPastPurchases] = useState(() => {
+        return getPurchaseHistoryProducts();
+    });
     const [lovedProducts, setLovedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -25,7 +27,9 @@ export default function GaragePage() {
                 if (purchaseIds.length > 0) {
                     try {
                         const { data } = await api.get(`/products?ids=${purchaseIds.join(',')}`);
-                        setPastPurchases(data.products || []);
+                        const freshProducts = data.products || [];
+                        setPastPurchases(freshProducts);
+                        addToPurchaseHistoryProducts(freshProducts);
                     } catch (err) {
                         console.error('Failed to fetch cookie purchases:', err);
                     }

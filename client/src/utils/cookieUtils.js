@@ -29,11 +29,34 @@ export function addToPurchaseHistory(productIds) {
     const existing = getCookie('past_purchases');
     const currentIds = existing ? existing.split(',') : [];
     const uniqueIds = [...new Set([...productIds, ...currentIds])].slice(0, 20);
-    setCookie('past_purchases', uniqueIds.join(','));
+    setCookie('past_purchases', uniqueIds.join(','), 30);
 }
 
 export function getPurchaseHistory() {
     const cookie = getCookie('past_purchases');
     if (!cookie) return [];
     return cookie.split(',').filter(Boolean);
+}
+
+// Full product history helpers
+export function addToPurchaseHistoryProducts(products) {
+    const existing = getPurchaseHistoryProducts();
+    const merged = [...products];
+    existing.forEach((existingProduct) => {
+        if (!merged.some(p => p._id === existingProduct._id)) {
+            merged.push(existingProduct);
+        }
+    });
+    const limited = merged.slice(0, 20);
+    setCookie('past_purchases_products', JSON.stringify(limited), 30);
+}
+
+export function getPurchaseHistoryProducts() {
+    try {
+        const cookie = getCookie('past_purchases_products');
+        return cookie ? JSON.parse(cookie) : [];
+    } catch (err) {
+        console.error('Failed to parse purchase history products:', err);
+        return [];
+    }
 }

@@ -43,7 +43,8 @@ app.use(
       ttl: 7 * 24 * 60 * 60, // 7 days
     }),
     cookie: {
-      // No maxAge → session cookie → cleared when browser closes
+      // 7 days persistent cookie so session doesn't clear when browser closes
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",

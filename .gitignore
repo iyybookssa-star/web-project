@@ -2,8 +2,8 @@
 dist/
 client/dist/
 
-
-
+# Uploads
+server/uploads/
 
 # Env
 .env
