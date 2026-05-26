@@ -46,7 +46,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3.0.1
+        uses: actions/upload-pages-artifact@v3.0.0
         with:
           name: github-pages
           # Upload the dist folder from the client directory
