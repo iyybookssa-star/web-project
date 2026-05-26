@@ -9,8 +9,8 @@ const { protect } = require("../middleware/auth");
 // @access  Private
 router.get("/", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate("favorites");
-    res.json(user.favorites);
+    const user = await User.findById(req.user._id).populate("favorites").lean();
+    res.json(user ? user.favorites : []);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -56,10 +56,10 @@ router.post("/:productId", protect, async (req, res) => {
 // @access  Private
 router.get("/check/:productId", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const isFavorite = user.favorites.some(
+    const user = await User.findById(req.user._id).select("favorites").lean();
+    const isFavorite = user ? user.favorites.some(
       (id) => id.toString() === req.params.productId,
-    );
+    ) : false;
     res.json({ isFavorite });
   } catch (error) {
     console.error(error);

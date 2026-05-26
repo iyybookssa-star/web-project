@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     const total = await Product.countDocuments(query);
-    const products = await Product.find(query).limit(Number(limit)).skip(skip).sort({ createdAt: -1 });
+    const products = await Product.find(query).limit(Number(limit)).skip(skip).sort({ createdAt: -1 }).lean();
 
     res.json({ products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
   } catch (error) {
@@ -62,7 +62,7 @@ router.get('/', async (req, res) => {
 // GET /api/products/:id - Get single product
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).json({ message: 'Product not found' });
     res.json(product);
   } catch (error) {
