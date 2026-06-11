@@ -3,6 +3,7 @@ const router = express.Router();
 const path = require('path');
 const multer = require('multer');
 const { protect, admin } = require('../middleware/auth');
+const { cacheMiddleware, invalidateCache } = require('../config/cache');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
@@ -29,7 +30,7 @@ const upload = multer({
 router.use(protect, admin);
 
 // ── Dashboard Stats ────────────────────────────────────────────────────────
-router.get('/stats', async (req, res) => {
+router.get('/stats', cacheMiddleware('admin-stats', 120), async (req, res) => {
   try {
     const [productCount, orderCount, userCount, orders] = await Promise.all([
       Product.countDocuments(),
@@ -55,6 +56,7 @@ router.post('/reset-revenue', async (req, res) => {
       { status: 'Delivered' },
       { $set: { status: 'Pending', isDelivered: false, deliveredAt: null } }
     );
+    invalidateCache('admin-stats');
     res.json({ message: 'Revenue cleared' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -74,6 +76,8 @@ router.get('/products', async (req, res) => {
 router.post('/products', async (req, res) => {
   try {
     const product = await Product.create(req.body);
+    invalidateCache('products');
+    invalidateCache('admin-stats');
     res.status(201).json(product);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -88,6 +92,8 @@ router.put('/products/:id', async (req, res) => {
       { new: true, runValidators: true }
     );
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    invalidateCache('products');
+    invalidateCache('product');
     res.json(product);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -98,6 +104,9 @@ router.delete('/products/:id', async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    invalidateCache('products');
+    invalidateCache('product');
+    invalidateCache('admin-stats');
     res.json({ message: 'Product deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -132,6 +141,7 @@ router.put('/orders/:id/status', async (req, res) => {
       { new: true }
     ).populate('user', 'name email');
     if (!order) return res.status(404).json({ message: 'Order not found' });
+    invalidateCache('admin-stats');
     res.json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });

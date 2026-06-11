@@ -2,11 +2,13 @@ const express = require('express');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const { protect } = require('../middleware/auth');
+const { invalidateCache } = require('../config/cache');
+const { validateOrder } = require('../middleware/validate');
 
 const router = express.Router();
 
 // POST /api/orders - Create a new order (protected)
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, validateOrder, async (req, res) => {
   const { items, shippingAddress, paymentMethod, itemsPrice, shippingPrice, taxPrice, totalPrice } = req.body;
 
   if (!items || items.length === 0) {
@@ -43,6 +45,11 @@ router.post('/', protect, async (req, res) => {
         $inc: { stock: -item.qty },
       });
     }
+
+    // Invalidate caches — stock changed and order count increased
+    invalidateCache('admin-stats');
+    invalidateCache('products');
+    invalidateCache('product');
 
     // Also store in session so it clears when browser closes
     if (!req.session.orders) req.session.orders = [];

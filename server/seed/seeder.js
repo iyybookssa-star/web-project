@@ -4,7 +4,7 @@ const path = require('path');
 const Product = require('../models/Product');
 const User = require('../models/User');
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const products = [
   {

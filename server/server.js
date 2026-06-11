@@ -8,7 +8,7 @@ const MongoStore = connectMongo.default || connectMongo;
 const connectDB = require("./config/db");
 
 // Load env vars
-dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 // Connect to MongoDB
 connectDB();

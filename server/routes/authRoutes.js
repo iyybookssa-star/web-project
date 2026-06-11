@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { validateRegister, validateLogin } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
 // POST /api/auth/register
-router.post('/register', async (req, res) => {
+router.post('/register', validateRegister, async (req, res) => {
   const { name, email, password } = req.body;
   try {
     const userExists = await User.findOne({ email });
@@ -29,7 +30,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', validateLogin, async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });

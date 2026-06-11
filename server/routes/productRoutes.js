@@ -1,11 +1,13 @@
 const express = require('express');
 const Product = require('../models/Product');
 const { protect, admin } = require('../middleware/auth');
+const { cacheMiddleware, invalidateCache } = require('../config/cache');
+const { validateProduct } = require('../middleware/validate');
 
 const router = express.Router();
 
 // GET /api/products - Get all products (with optional search & category filter)
-router.get('/', async (req, res) => {
+router.get('/', cacheMiddleware('products'), async (req, res) => {
   try {
     const { category, search, featured, limit = 20, page = 1 } = req.query;
     const query = {};
@@ -60,7 +62,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/products/:id - Get single product
-router.get('/:id', async (req, res) => {
+router.get('/:id', cacheMiddleware('product'), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -71,9 +73,10 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/products - Create product (admin only)
-router.post('/', protect, admin, async (req, res) => {
+router.post('/', protect, admin, validateProduct, async (req, res) => {
   try {
     const product = await Product.create(req.body);
+    invalidateCache('products');
     res.status(201).json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -81,10 +84,12 @@ router.post('/', protect, admin, async (req, res) => {
 });
 
 // PUT /api/products/:id - Update product (admin only)
-router.put('/:id', protect, admin, async (req, res) => {
+router.put('/:id', protect, admin, validateProduct, async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    invalidateCache('products');
+    invalidateCache('product');
     res.json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -96,6 +101,8 @@ router.delete('/:id', protect, admin, async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    invalidateCache('products');
+    invalidateCache('product');
     res.json({ message: 'Product removed' });
   } catch (error) {
     res.status(500).json({ message: error.message });

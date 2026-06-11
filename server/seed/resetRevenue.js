@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const Order = require('../models/Order');
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const resetRevenue = async () => {
   try {
