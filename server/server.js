@@ -6,6 +6,8 @@ const session = require("express-session");
 const connectMongo = require("connect-mongo");
 const MongoStore = connectMongo.default || connectMongo;
 const connectDB = require("./config/db");
+const mongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
 
 // Load env vars
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
@@ -14,6 +16,13 @@ dotenv.config({ path: path.join(__dirname, "..", ".env") });
 connectDB();
 
 const app = express();
+
+// Secure application by setting various HTTP headers
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Middleware
 const allowedOrigins = [
@@ -29,6 +38,9 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Sanitize user input to prevent MongoDB Operator Injection (NoSQL injection)
+app.use(mongoSanitize());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Session middleware (stored in MongoDB via connect-mongo)

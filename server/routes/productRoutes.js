@@ -6,37 +6,57 @@ const { validateProduct } = require('../middleware/validate');
 
 const router = express.Router();
 
+// Helper to escape characters for regex search to prevent Regex Injection / ReDoS
+const escapeRegExp = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // GET /api/products - Get all products (with optional search & category filter)
 router.get('/', cacheMiddleware('products'), async (req, res) => {
   try {
     const { category, search, featured, limit = 20, page = 1 } = req.query;
     const query = {};
 
-    if (category && category !== 'All') query.category = category;
-    if (featured === 'true') query.isFeatured = true;
+    // Validate parameter types to prevent object injection/tampering
+    const categoryStr = typeof category === 'string' ? category : undefined;
+    const searchStr = typeof search === 'string' ? search : undefined;
+    const featuredStr = typeof featured === 'string' ? featured : undefined;
+    
+    if (categoryStr && categoryStr !== 'All') query.category = categoryStr;
+    if (featuredStr === 'true') query.isFeatured = true;
 
     // Filter by specific IDs (for past purchases, cart, etc.)
     const { ids } = req.query;
-    if (ids) {
-       const idList = ids.split(',').filter(id => id.match(/^[0-9a-fA-F]{24}$/)); // Basic validation
+    const idsStr = typeof ids === 'string' ? ids : undefined;
+    if (idsStr) {
+       const idList = idsStr.split(',').filter(id => id.match(/^[0-9a-fA-F]{24}$/)); // Basic validation
        if (idList.length > 0) query._id = { $in: idList };
     }
 
     // Vehicle Fitment Filtering
     const { make, model, year } = req.query;
-    if (make) query.compatibleMakes = make;
-    if (year) query.compatibleYears = Number(year);
-    // Note: Model filtering might need a schema update if we want to be specific, 
-    // but for now we'll assume 'make' covers the main compatibility or search description
-    if (model && model !== 'Select Model') {
+    const makeStr = typeof make === 'string' ? make : undefined;
+    const modelStr = typeof model === 'string' ? model : undefined;
+    const yearStr = typeof year === 'string' ? year : undefined;
+
+    if (makeStr) query.compatibleMakes = makeStr;
+    if (yearStr) {
+       const parsedYear = Number(yearStr);
+       if (!isNaN(parsedYear)) query.compatibleYears = parsedYear;
+    }
+
+    // Escape regex pattern inputs to prevent regex execution errors or Denial of Service (ReDoS)
+    if (modelStr && modelStr !== 'Select Model') {
+       const escapedModel = escapeRegExp(modelStr);
        query.$or = [
-          { description: { $regex: model, $options: 'i' } },
-          { name: { $regex: model, $options: 'i' } }
+          { description: { $regex: escapedModel, $options: 'i' } },
+          { name: { $regex: escapedModel, $options: 'i' } }
        ];
     }
 
-    if (search) {
-      const searchRegex = { $regex: search, $options: 'i' };
+    if (searchStr) {
+      const escapedSearch = escapeRegExp(searchStr);
+      const searchRegex = { $regex: escapedSearch, $options: 'i' };
       const searchOr = [
         { name: searchRegex },
         { partNumber: searchRegex },
@@ -51,11 +71,15 @@ router.get('/', cacheMiddleware('products'), async (req, res) => {
       }
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
-    const total = await Product.countDocuments(query);
-    const products = await Product.find(query).limit(Number(limit)).skip(skip).sort({ createdAt: -1 }).lean();
+    // Secure pagination bounds to prevent excessive database load
+    const cleanLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const cleanPage = Math.max(parseInt(page, 10) || 1, 1);
+    const skip = (cleanPage - 1) * cleanLimit;
 
-    res.json({ products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    const total = await Product.countDocuments(query);
+    const products = await Product.find(query).limit(cleanLimit).skip(skip).sort({ createdAt: -1 }).lean();
+
+    res.json({ products, total, page: cleanPage, pages: Math.ceil(total / cleanLimit) });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

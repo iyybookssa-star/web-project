@@ -20,9 +20,14 @@ const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
     fileFilter: (req, file, cb) => {
-        const allowed = /jpeg|jpg|png|gif|webp/;
-        const ok = allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype);
-        cb(ok ? null : new Error('Only image files are allowed'), ok);
+        const allowedExts = /^\.(jpeg|jpg|png|gif|webp)$/;
+        const allowedMimes = /^image\/(jpeg|jpg|png|gif|webp)$/;
+        
+        const extOk = allowedExts.test(path.extname(file.originalname).toLowerCase());
+        const mimeOk = allowedMimes.test(file.mimetype);
+        
+        const ok = extOk && mimeOk;
+        cb(ok ? null : new Error('Only image files (JPEG, PNG, GIF, WEBP) are allowed'), ok);
     },
 });
 
@@ -135,10 +140,17 @@ router.get('/orders', async (req, res) => {
 router.put('/orders/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
+
+    // Explicitly validate status parameter to prevent injection of invalid/malicious values
+    const allowedStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+    if (!status || typeof status !== 'string' || !allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid or missing status value' });
+    }
+
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { status, ...(status === 'Delivered' ? { isDelivered: true, deliveredAt: Date.now() } : {}) },
-      { new: true }
+      { new: true, runValidators: true }
     ).populate('user', 'name email');
     if (!order) return res.status(404).json({ message: 'Order not found' });
     invalidateCache('admin-stats');

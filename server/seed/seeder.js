@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
+const crypto = require('crypto');
 const Product = require('../models/Product');
 const User = require('../models/User');
 
@@ -145,11 +146,14 @@ const seedDB = async () => {
     await Product.deleteMany();
     await User.deleteMany();
 
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD || crypto.randomBytes(8).toString('hex');
+    const userPassword = process.env.SEED_USER_PASSWORD || crypto.randomBytes(8).toString('hex');
+
     // Create admin user
     await User.create({
       name: 'Admin User',
       email: 'admin@partify.com',
-      password: 'admin123456',
+      password: adminPassword,
       isAdmin: true,
     });
 
@@ -157,15 +161,15 @@ const seedDB = async () => {
     await User.create({
       name: 'John Doe',
       email: 'john@example.com',
-      password: 'password123',
+      password: userPassword,
       isAdmin: false,
     });
 
     await Product.insertMany(products);
 
     console.log('✅ Data Seeded Successfully!');
-    console.log('👤 Admin: admin@partify.com / admin123456');
-    console.log('👤 User: john@example.com / password123');
+    console.log(`👤 Admin: admin@partify.com / ${adminPassword}`);
+    console.log(`👤 User: john@example.com / ${userPassword}`);
     process.exit(0);
   } catch (error) {
     console.error('❌ Seeding error:', error.message);
