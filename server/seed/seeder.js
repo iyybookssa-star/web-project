@@ -148,6 +148,7 @@ const seedDB = async () => {
 
     const adminPassword = process.env.SEED_ADMIN_PASSWORD || crypto.randomBytes(8).toString('hex');
     const userPassword = process.env.SEED_USER_PASSWORD || crypto.randomBytes(8).toString('hex');
+    const engelPassword = process.env.SEED_ENGEL_PASSWORD || 'reddead2';
 
     // Create admin user
     await User.create({
@@ -165,11 +166,20 @@ const seedDB = async () => {
       isAdmin: false,
     });
 
+    // Create engelibrahmo user
+    await User.create({
+      name: 'engelibrahmo',
+      email: 'engelibrahmo@partify.com',
+      password: engelPassword,
+      isAdmin: false,
+    });
+
     await Product.insertMany(products);
 
     console.log('✅ Data Seeded Successfully!');
     console.log(`👤 Admin: admin@partify.com / ${adminPassword}`);
     console.log(`👤 User: john@example.com / ${userPassword}`);
+    console.log(`👤 User: engelibrahmo@partify.com / ${engelPassword}`);
     process.exit(0);
   } catch (error) {
     console.error('❌ Seeding error:', error.message);
